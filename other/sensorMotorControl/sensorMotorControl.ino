@@ -99,10 +99,27 @@ void motorCommand(){
     motor[i].set(percentToThrottle(motorCommand[i]));
 }
 
-//{ForwardPort, ForwardAft, DepthFore, DepthAft, StrafeTop, StrafeBottom,
-// Torpedo1, Torpedo2, Dropper1, Dropper2, Arm
+//{ForwardPort,ForwardAft,DepthFore,DepthAft,StrafeTop,StrafeBottom,
+// Torpedo1,Torpedo2,Dropper1,Dropper2,Arm
 void parseSerialInput(){
   
+}
+
+//Make sure serial input string is properly formatted
+//String should be list of X numbers separated by commas, and wrapped in {}
+boolean validInput(String s){
+  if(s.charAt(0) != '{' || s.charAt(s.length() - 1) != '{'){
+    //Error output
+    return false;
+  }
+  int currentIndex = 1;
+  int numNumbers;//Number of integers separated by commas in string
+  for(int i = 1; i < s.length(); i++){
+    if(s.charAt(i) == ',' || i = s.length() - 2){
+      //make sure number is valid float too...
+      numNumbers++;
+    }
+  }
 }
 
 string buildSerialOutput(){
