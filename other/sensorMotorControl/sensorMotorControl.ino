@@ -1,14 +1,11 @@
 #include <Wire.h>
 #include "Arduino_I2C_ESC.h"
+#include <ctype.h>
 
-Arduino_I2C_ESC motForwardPort(0x2C);
-Arduino_I2C_ESC motForwardStar(0x2F);
-Arduino_I2C_ESC motDepthFore(0x2D);
-Arduino_I2C_ESC motDepthAft(0x30);
-Arduino_I2C_ESC motStrafeTop(0x2E);
-Arduino_I2C_ESC motStrafeBottom(0x2B);
+int signal;
+const int numMotors = 6;
+String serialMessage;
 
-//ME for Motor Enum
 enum MotorE{
   MEForwardPort,
   MEForwardStar,
@@ -18,16 +15,20 @@ enum MotorE{
   MEStrafeBottom
 };
 
-int signal;
-const int numMotors = 6;
-String serialMessage;
+Arduino_I2C_ESC motors[numMotors] = {
+  Arduino_I2C_ESC(0x2C),//ForwardPort
+  Arduino_I2C_ESC(0x2F),//ForwardStar
+  Arduino_I2C_ESC(0x2D),//DepthFore
+  Arduino_I2C_ESC(0x30),//DepthAft
+  Arduino_I2C_ESC(0x2E),//StrafeTop
+  Arduino_I2C_ESC(0x2B)//StrafeBottom
+};
 
-Arduino_I2C_ESC motors[numMotors];//Motor objects
 boolean motorCon[numMotors];//Motor connection status
 int motorRPM[numMotors];//Motor RPM
 //Array of % thrust values we'd like each motor to operate at
 //Values range between -1 and 1 for 100% forward/reverse thrust
-float motorCommand[numMotors];
+float motorCommand[] = {0,0,0,0,0,0};
 
 void setup() {
   Serial.begin(57600);
@@ -40,23 +41,6 @@ void setup() {
   //TWBR = 158;  
   //TWSR |= bit (TWPS0);
   
-  initMotors();
-}
-
-boolean initMotors(){
-  //Populate motor array with motor objects
-  motors[MEForwardPort] = motForwardPort;
-  motors[MEForwardStar] = motForwardStar;
-  motors[MEDepthFore] = motDepthFore;
-  motors[MEDepthAft] = motDepthAft;
-  motors[MEStrafeTop] = motStrafeTop;
-  motors[MEStrafeBottom] = mottrafeBottom;
-  
-  //Initialize all motors to no thrust
-  for(int i = 0; i < numMotors; i++){
-    motorCommand[i] = 0;
-  }
-  
   getMotorStatus();
 }
 
@@ -64,7 +48,7 @@ boolean initMotors(){
 boolean getMotorStatus(){
   boolean stat = true, fail = false;
   for(int i = 0; i < numMotors; i++){
-    stat = motor[i].isAlive();
+    stat = motors[i].isAlive();
     if(stat = false)
       fail = false;
     motorCon[i] = stat;
@@ -74,14 +58,14 @@ boolean getMotorStatus(){
 
 void getMotorRPM(){
   for(int i = 0; i < numMotors; i++)
-    motorRPM[i] = (int)motor[i].rpm();
+    motorRPM[i] = (int)motors[i].rpm();
 }
 
 //Run actual update function that updates values from motor controllers
 //Also call functions to store these values
 void motorUpdate(){
   for(int i = 0; i < numMotors; i++)
-    motor[i].update();
+    motors[i].update();
 
   getMotorStatus();
   getMotorRPM();
@@ -94,13 +78,13 @@ int16_t percentToThrottle(float t){
 }
 
 //Command motors to run at values specified in motorCommand array
-void motorCommand(){
+void setMotorThrottles(){
   for(int i = 0; i < numMotors; i++)
-    motor[i].set(percentToThrottle(motorCommand[i]));
+    motors[i].set(percentToThrottle(motorCommand[i]));
 }
 
 //{ForwardPort,ForwardAft,DepthFore,DepthAft,StrafeTop,StrafeBottom,
-// Torpedo1,Torpedo2,Dropper1,Dropper2,Arm
+// Torpedo1,Torpedo2,Dropper1,Dropper2,Arm}
 void parseSerialInput(){
   
 }
@@ -115,14 +99,22 @@ boolean validInput(String s){
   int currentIndex = 1;
   int numNumbers;//Number of integers separated by commas in string
   for(int i = 1; i < s.length(); i++){
-    if(s.charAt(i) == ',' || i = s.length() - 2){
-      //make sure number is valid float too...
+    if(s.charAt(i) == ',' || i == s.length() - 2){
+      for(int j = 0; j < i - currentIndex; j++){
+        if(!isDigit(s.charAt(j)))
+          return false;
+      }
       numNumbers++;
     }
   }
+  
+  if(numNumbers != 11)
+    return false;
+  
+  return true;
 }
 
-string buildSerialOutput(){
+String buildSerialOutput(){
   
 }
 
