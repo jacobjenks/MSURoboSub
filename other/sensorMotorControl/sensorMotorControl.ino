@@ -124,11 +124,10 @@ String packaging_sensor_data(int pressure_sensor_count,
                              int hydrophone_sensor_pin3 )
 {
   String temp ;
-  temp = "TEST" ;//pressure_sensor_count;  //  "H1 :" + hydrophone_sensor_pin1;
-  temp.concat("H1:");//hydrophone_sensor_pin1;
-  temp.concat(1);//hydrophone_sensor_pin2; 
-  //temp = "H3 :" + 3;//hydrophone_sensor_pin3; 
-                                        
+  temp.concat("P:");temp.concat(pressure_sensor_count); 
+  temp.concat("H1:");temp.concat(hydrophone_sensor_pin1);
+  temp.concat("H2:");temp.concat(hydrophone_sensor_pin2);
+  temp.concat("H2:");temp.concat(hydrophone_sensor_pin2);
   return temp;
   Serial.println(temp);  
 }
@@ -153,5 +152,5 @@ void loop() {
   Serial.println(sensor_data_package);
   delay(1000); // Update at roughly 4 hz for the demo
   //Serial.println(sensor_data_package);
-}
+
 }
