@@ -118,12 +118,40 @@ String buildSerialOutput(){
   
 }
 
-void loop() {
+String packaging_sensor_data(int pressure_sensor_count, 
+                             int hydrophone_sensor_pin1, 
+                             int hydrophone_sensor_pin2, 
+                             int hydrophone_sensor_pin3 )
+{
+  String temp ;
+  temp = "TEST" ;//pressure_sensor_count;  //  "H1 :" + hydrophone_sensor_pin1;
+  temp.concat("H1:");//hydrophone_sensor_pin1;
+  temp.concat(1);//hydrophone_sensor_pin2; 
+  //temp = "H3 :" + 3;//hydrophone_sensor_pin3; 
+                                        
+  return temp;
+  Serial.println(temp);  
+}
 
+
+void loop() {
+  
+  int pressure_sensor_count = analogRead(0);
+  int hydrophone_sensor_pin1= analogRead(1);
+  int hydrophone_sensor_pin2= analogRead(2);
+  int hydrophone_sensor_pin3= analogRead(3);
+  String  sensor_data_package = packaging_sensor_data( pressure_sensor_count, 
+                              hydrophone_sensor_pin1, 
+                              hydrophone_sensor_pin2, 
+                              hydrophone_sensor_pin3 );
+ 
   if ( Serial.available() > 0 ) {
     signal = Serial.parseInt();
   }
 
   motorUpdate();
-  delay(250); // Update at roughly 4 hz for the demo
+  Serial.println(sensor_data_package);
+  delay(1000); // Update at roughly 4 hz for the demo
+  //Serial.println(sensor_data_package);
+}
 }
