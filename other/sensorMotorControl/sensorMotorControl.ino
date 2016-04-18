@@ -127,9 +127,9 @@ String packaging_sensor_data(int pressure_sensor_count,
   temp.concat("P:");temp.concat(pressure_sensor_count); 
   temp.concat("H1:");temp.concat(hydrophone_sensor_pin1);
   temp.concat("H2:");temp.concat(hydrophone_sensor_pin2);
-  temp.concat("H2:");temp.concat(hydrophone_sensor_pin2);
+  temp.concat("H3:");temp.concat(hydrophone_sensor_pin3);
   return temp;
-  Serial.println(temp);  
+  //Serial.println(temp);  
 }
 
 
@@ -147,10 +147,9 @@ void loop() {
   if ( Serial.available() > 0 ) {
     signal = Serial.parseInt();
   }
-
+//Serial.write(sensor_data_package);
   motorUpdate();
-  Serial.println(sensor_data_package);
   delay(1000); // Update at roughly 4 hz for the demo
-  //Serial.println(sensor_data_package);
+  
 
 }
