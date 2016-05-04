@@ -1,0 +1,10 @@
+<?xml version="1.0">
+
+
+<!-- Launch file to start msurobosub modules -->
+<!-- Example launch files can be seen at github.com/bluerobotics/bluerov-ros-pkg/ -->
+
+<launch>
+	<node respawn="true" pkg="msurobosub" type="ArduinoInterface">
+	</node>
+</launch>
