@@ -12,6 +12,7 @@ To start ROS:
 	roscore
 
 Dependencies that need to be installed separately:
-	ArduinoJson
+	#ArduinoJson
 	ros-indigo-keyboard
 	ros-indigo-rosserial
+	ros-indigo-rosserial-arduino
