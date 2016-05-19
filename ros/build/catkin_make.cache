@@ -1,2 +1,0 @@
-msurobosub
--DCATKIN_DEVEL_PREFIX=/home/robosub/MSURoboSub/ros/devel -DCMAKE_INSTALL_PREFIX=/home/robosub/MSURoboSub/ros/install -G Unix Makefiles

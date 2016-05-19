@@ -1,3 +1,3 @@
 **.catkin_workspace
-ROS/devel/
-ROS/build/
+devel/
+build/

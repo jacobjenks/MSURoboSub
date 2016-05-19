@@ -1,8 +1,0 @@
-prefix=/home/robosub/MSURoboSub/ros/install
-
-Name: msurobosub
-Description: Description of msurobosub
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/robosub/MSURoboSub/ros/install/lib 
-Requires: 

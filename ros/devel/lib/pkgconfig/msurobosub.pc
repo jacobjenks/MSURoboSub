@@ -3,6 +3,6 @@ prefix=/home/robosub/MSURoboSub/ros/devel
 Name: msurobosub
 Description: Description of msurobosub
 Version: 0.0.0
-Cflags: 
+Cflags: -I/home/robosub/MSURoboSub/ros/devel/include
 Libs: -L/home/robosub/MSURoboSub/ros/devel/lib 
-Requires: 
+Requires: message_runtime
