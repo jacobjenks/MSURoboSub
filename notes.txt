@@ -11,6 +11,9 @@ To build ROS:
 To start ROS:
 	roscore
 
+To add a new message type:
+	Add to CMakeLists in msurobosub package
+
 Dependencies that need to be installed separately:
 	#ArduinoJson
 	ros-indigo-keyboard
