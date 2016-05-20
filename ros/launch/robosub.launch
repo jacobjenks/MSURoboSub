@@ -5,6 +5,8 @@
 <!-- Example launch files can be seen at github.com/bluerobotics/bluerov-ros-pkg/ -->
 
 <launch>
-	<node respawn="true" pkg="msurobosub" type="ArduinoInterface">
+	<node respawn="true" pkg="rosserial_python" type="serial_node.py" name="ArduinoSerialRelay">
+		<param name="port" value="/dev/ttyACM1"/>
+		<param name="baud" value="115200"/>
 	</node>
 </launch>

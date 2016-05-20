@@ -8,6 +8,13 @@
 #include <msurobosub/MotorCommand.h>
 #include <msurobosub/PneumaticCommand.h>
 
+/*
+ * This arduino relays pneumatic/motor commands from ROS to the hardware, and relays
+ * depth/hydrophone/motor sensor data to ROS.
+ * 
+ * A rosserial_python node (started in the launch file) listens to the serial channel, and
+ * relays all of this information between the Arduino and ROS
+*/
 
 const int numMotors = 6;
 const int hydroPin1 = A1;
