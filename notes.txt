@@ -19,5 +19,5 @@ Dependencies that need to be installed separately:
 	ros-indigo-keyboard
 	ros-indigo-rosserial
 	ros-indigo-rosserial-arduino
-	pyserial
 	ros-indigo-robot-localization
+	pyserial
