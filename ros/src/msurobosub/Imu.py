@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 import serial
 import rospy
+import re
 from sensor_msgs.msg import Imu, Temperature
 
 imuPort = '/dev/ttyUSB0'
 imuBaud = 115200
+ser
 
 def imuTalker():
 	pubImu = rospy.Publisher('imu', Imu, queue_size=10)
@@ -43,34 +45,45 @@ def imuTalker():
 	ser.flush()#make sure buffer is empty before we start looping
 
 	while not rospy.is_shutdown():
-		data = ser.readline()
-		if len(data) > 0:
-			data = data.split(',')
-			
-			imuMsg.header.stamp = rospy.get_time()
-			imuMsg.header.seq += 1
+		
+		imuMsg.header.stamp = rospy.get_time()
+		imuMsg.header.seq += 1
 
-			ser.write("PSPA,A\r\n")#accel
-			ser.write("PSPA,G\r\n")#gyro
-			ser.write("PSPA,QUAT\r\n")#quat
-			ser.write("PSPA,Temp\r\n")#temp
+		#Quaternion mag data
+		data = getImuData("PSPA,QUAT\r\n")
+		imuMsg.orientation.w = data[0]
+		imuMsg.orientation.x = data[1]
+		imuMsg.orientation.y = data[2]
+		imuMsg.orientation.z = data[3]
 
-			imuMsg.orientation.x = data[0]
-			imuMsg.orientation.y = data[1]
-			imuMsg.orientation.z = data[2]
-			imuMsg.orientation.w = data[3]
-			imuMsg.angular_velocity.x = data[4]
-			imuMsg.angular_velocity.y = data[5]
-			imuMsg.angular_velocity.z = data[6]
-			imuMsg.linear_acceleration.x = data[7] 
-			imuMsg.linear_acceleration.y = data[8]
-			imuMsg.linear_acceleration.z = data[9]
+		#Gyro data
+		data = getImuData("PSPA,G\r\n")
+		imuMsg.angular_velocity.x = data[0]
+		imuMsg.angular_velocity.y = data[1]
+		imuMsg.angular_velocity.z = data[2]
+		
+		#Accelerometer data
+		data = getImuData("PSPA,A\r\n")
+		imuMsg.linear_acceleration.x = data[0] 
+		imuMsg.linear_acceleration.y = data[1]
+		imuMsg.linear_acceleration.z = data[2]
 
-			tempMsg.header.stamp = rospy.get_time()
-			tempMsg.temperature = data[10]
-			pubImu.publish(imuMsg)
-			pubTemp.publish(tempMsg)
+		#Temperature data
+		data = getImuData("PSPA,Temp\r\n")
+		tempMsg.header.stamp = rospy.get_time()
+		tempMsg.temperature = data[0]
+
+		pubImu.publish(imuMsg)
+		pubTemp.publish(tempMsg)
+
 		rate.sleep()
+
+def getImuData(command):
+	ser.write(command)
+	data = ser.readline()
+	values = re.findall(r'[-\d.]', data)
+	return values
+
 
 if __name__ == '__main__':
 	try:
