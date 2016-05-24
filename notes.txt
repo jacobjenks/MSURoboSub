@@ -8,6 +8,10 @@ To build ROS:
 	Switch to ros directory
 	catkin_make
 
+To make it so ROS can find our package:
+	Add the following line to the end of ~/.bashrc
+	source ~/MSURoboSub/ros/devel/setup.bash
+
 To start ROS:
 	roscore
 

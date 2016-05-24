@@ -50,6 +50,7 @@ add_message_files(
   MotorCommand.msg
   MotorStatus.msg
   Hydro.msg
+  PneumaticCommand.msg
 )
 
 ## Generate services in the 'srv' folder

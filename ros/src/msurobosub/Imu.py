@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 import serial
 import rospy
-from sensor_msgs import Imu
-from msurobosub import Temp
+from sensor_msgs.msg import Imu, Temperature
 
 imuPort = '/dev/ttyUSB0'
 imuBaud = 115200
 
 def imuTalker():
 	pubImu = rospy.Publisher('imu', Imu, queue_size=10)
-	pubTemp = rospy.Publisher('temp', Float64, queue_size=10)
+	pubTemp = rospy.Publisher('temp', Temperature, queue_size=10)
 	rospy.init_node('imu')
 	rate = rospy.Rate(100)#Update at GEDC-6E update rate
 
@@ -31,7 +30,7 @@ def imuTalker():
 											 0,0,1]
 
 
-	tempMsg = Temp()
+	tempMsg = Temperature()
 	tempMsg.header.seq = 0
 	tempMsg.header.frame_id = 0
 	
@@ -61,7 +60,7 @@ def imuTalker():
 			imuMsg.linear_acceleration.z = data[9]
 
 			tempMsg.header.stamp = rospy.get_time()
-			tempMsg.temp = data[10]
+			tempMsg.temperature = data[10]
 
 			pubImu.publish(imuMsg)
 			pubTemp.publish(tempMsg)
