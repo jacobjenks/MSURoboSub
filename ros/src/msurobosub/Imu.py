@@ -39,14 +39,21 @@ def imuTalker():
 	except serial.SerialException:
 		rospy.logfatal("Error connecting to IMU.")
 
+
 	ser.flush()#make sure buffer is empty before we start looping
 
 	while not rospy.is_shutdown():
 		data = ser.readline()
 		if len(data) > 0:
 			data = data.split(',')
+			
 			imuMsg.header.stamp = rospy.get_time()
 			imuMsg.header.seq += 1
+
+			ser.write("PSPA,A\r\n")#accel
+			ser.write("PSPA,G\r\n")#gyro
+			ser.write("PSPA,QUAT\r\n")#quat
+			ser.write("PSPA,Temp\r\n")#temp
 
 			imuMsg.orientation.x = data[0]
 			imuMsg.orientation.y = data[1]
@@ -61,7 +68,6 @@ def imuTalker():
 
 			tempMsg.header.stamp = rospy.get_time()
 			tempMsg.temperature = data[10]
-
 			pubImu.publish(imuMsg)
 			pubTemp.publish(tempMsg)
 		rate.sleep()
