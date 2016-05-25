@@ -7,8 +7,7 @@
 <launch>
 	<!-- Arduino relay  -->
 	<node respawn="true" pkg="rosserial_python" type="serial_node.py" name="arduino">
-		<param name="port" value="/dev/ttyACM1"/>
-		<param name="baud" value="115200"/>
+		<param name="port" value="/dev/ttyACM0"/>
 	</node>
 
 	<!-- IMU data -->
@@ -20,17 +19,32 @@
 	<node respawn="true" pkg="msurobosub" type="Camera.py" name="camera">
 	</node>
 
+	<node pkg="tf2_ros" type="static_transform_publisher" name="bl_imu" args="0 0 0 0 0 0 1 base_link imu_link" />
+	<node pkg="tf2_ros" type="static_transform_publisher" name="bl_gps" args="0 0 0 0 0 0 1 imu_link gps_link"/>
 
 	<!-- This node makes a state estimate for the robot given IMU data -->
 	<!-- wiki.ros.org/robot_localization -->
 	<node respawn="true" pkg="robot_localization" type="ekf_localization_node" name="ekf_localization_node">
 		<param name="frequency" value="100"/> 			<!-- Number of state estimations per second -->
-		<param name="sensor_timeout" value="1"/>		<!-- Seconds to wait before making state estimation without reading -->
-		<param name="imu0" value="msurobosub/imu"/> 	  <!-- Topic name for IMU data -->
+		<param name="sensor_timeout" value=".1"/>		<!-- Seconds to wait before making state estimation without reading -->
+		<param name="transform_time_offset" value="0.0"/>
+		<param name="two_d_mode" value="false"/>
+		<param name="print_diagnostics" value="true"/>
+		<param name="debug" value="false"/>
+		<param name="map_frame" value="map"/>
+		<param name="odom_frame" value="odom"/>
+		<param name="base_link_frame" value="base_link"/>
+		<param name="world_frame" value="odom"/>
+		<param name="use_control" value="false"/>
+		<param name="imu0" value="imu"/> 	  <!-- Topic name for IMU data -->
 		<rosparam param="imu0_config">[false, false, false,<!-- Which state variables to from IMU to fuse -->
-false, false, false,
+true, true, true,
 false, false, false,
 false, false, false,
 true, true, true]</rosparam>
+		<param name="imu0_queue_size" value="2"/>
+		<param name="imu0_differential" value="false"/>
+		<param name="imu0_relative" value="true"/>
+		<param name="imu0_remove_gravitational_acceleration" value="true"/>
 	</node>
 </launch>

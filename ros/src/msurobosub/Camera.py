@@ -6,9 +6,11 @@ from cv_bridge import CvBridge
 
 camFConnected = True 
 camDConnected = True 
+cvBridge = None
 
 #Publish images from forward and bottom camera
 def main():
+	global cvBridge
 	rospy.init_node('camera')
 	pubCamF = rospy.Publisher('camera_forward', Image, queue_size=10)
 	pubCamD = rospy.Publisher('camera_down', Image, queue_size=10)
@@ -31,10 +33,11 @@ def main():
 			pubImage(pubCamD, camD)
 
 def pubImage(publisher, camera):
+	global cvBridge
 	ret, image = camera.read()
 	if ret:
 		publisher.publish(cvBridge.cv2_to_imgmsg(image))
-	else:
+	#else:
 		#rospy.logerr("Failed to read from camera")
 
 if __name__ == '__main__':
@@ -42,4 +45,3 @@ if __name__ == '__main__':
 		main()
 	except rospy.ROSInterruptException:
 		pass
-	main(sys.argv)

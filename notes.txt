@@ -21,6 +21,12 @@ To run an individual node:
 To add a new message type:
 	Add to CMakeLists in msurobosub package
 
+To rebuild Arduino libraries:
+	//wiki.ros.org/rosserial_arduino/Tutorials/Arduino IDE Setup
+	cd ~/Arduino/libraries/
+	rm -rf ros_lib
+	rosrun rosserial_arduino make_libraries.py
+
 Dependencies that need to be installed separately:
 	#ArduinoJson
 	ros-indigo-keyboard
