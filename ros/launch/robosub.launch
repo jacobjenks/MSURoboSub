@@ -14,15 +14,11 @@
 	<node respawn="true" pkg="msurobosub" type="Imu.py" name="imu">
 	</node>
 
-
 	<!-- Camera data -->
 	<node respawn="true" pkg="msurobosub" type="Camera.py" name="camera">
 	</node>
 
-	<node pkg="tf2_ros" type="static_transform_publisher" name="bl_imu" args="0 0 0 0 0 0 1 base_link imu_link" />
-	<node pkg="tf2_ros" type="static_transform_publisher" name="bl_gps" args="0 0 0 0 0 0 1 imu_link gps_link"/>
-
-	<!-- This node makes a state estimate for the robot given IMU data -->
+	<!-- State estimate for the robot given IMU data -->
 	<!-- wiki.ros.org/robot_localization -->
 	<node respawn="true" pkg="robot_localization" type="ekf_localization_node" name="ekf_localization_node">
 		<param name="frequency" value="100"/> 			<!-- Number of state estimations per second -->
@@ -36,7 +32,7 @@
 		<param name="base_link_frame" value="base_link"/>
 		<param name="world_frame" value="odom"/>
 		<param name="use_control" value="false"/>
-		<param name="imu0" value="imu"/> 	  <!-- Topic name for IMU data -->
+		<param name="imu0" value="sensor_msgs/Imu"/> 	  <!-- Topic name for IMU data -->
 		<rosparam param="imu0_config">[false, false, false,<!-- Which state variables to from IMU to fuse -->
 true, true, true,
 false, false, false,
@@ -46,5 +42,12 @@ true, true, true]</rosparam>
 		<param name="imu0_differential" value="false"/>
 		<param name="imu0_relative" value="true"/>
 		<param name="imu0_remove_gravitational_acceleration" value="true"/>
+	</node>
+
+	<!-- Keyboard input -->
+	<node respawn="true" pkg="keyboard" type="keyboard" name="keyboard">
+	</node> 
+
+	<node respawn="true" pkg="msurobosub" type="UserInput.py" name="user_input">
 	</node>
 </launch>

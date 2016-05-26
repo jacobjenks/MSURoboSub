@@ -12,8 +12,8 @@ cvBridge = None
 def main():
 	global cvBridge
 	rospy.init_node('camera')
-	pubCamF = rospy.Publisher('camera_forward', Image, queue_size=10)
-	pubCamD = rospy.Publisher('camera_down', Image, queue_size=10)
+	pubCamF = rospy.Publisher('sensor_msgs/CameraForward', Image, queue_size=10)
+	pubCamD = rospy.Publisher('sensor_msgs/CameraDown', Image, queue_size=10)
 	rate = rospy.Rate(30)#30 FPS
 
 	cvBridge = CvBridge()

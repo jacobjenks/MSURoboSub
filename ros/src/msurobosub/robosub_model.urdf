@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<robot name="robosub">
+	<link name="base_link">
+		<visual>
+			<geometry>
+				
+			</geometry>
+		</visual>
+	</link
+</robot>

@@ -30,16 +30,18 @@ const int hydroPin2 = 1;
 const int hydroPin3 = 2;
 const int depthPin = 3;
 
+bool pneumaticLock = true;
+
 //PSI at water surface - change when elevation changes
 const float surfacePSI = 15;
 
 ros::NodeHandle nh;
 msurobosub::MotorStatus motorStatusMsg;
-ros::Publisher pubMotorStatus("motorStatus", &motorStatusMsg);
+ros::Publisher pubMotorStatus("sensor_msgs/MotorStatus", &motorStatusMsg);
 msurobosub::Depth depthMsg;
-ros::Publisher pubDepth("depth", &depthMsg);
+ros::Publisher pubDepth("sensor_msgs/Depth", &depthMsg);
 msurobosub::Hydro hydroMsg;
-ros::Publisher pubHydro("hydrophone", &hydroMsg);
+ros::Publisher pubHydro("sensor_msgs/Hydrophone", &hydroMsg);
 
 Arduino_I2C_ESC motors[numMotors] = {
   Arduino_I2C_ESC(0x2C),//ForwardPort
@@ -61,23 +63,51 @@ void motorCommandCallback(const msurobosub::MotorCommand& command){
 
 void pneumaticCommandCallback(const msurobosub::PneumaticCommand& command){
   switch(command.command){
-    case 0://Torp 1
-      activatePneumatics(torp1Pin, 250);
+    case 0://Pneumatic lock
+      if(pneumaticLock){
+        pneumaticLock = false;
+        nh.loginfo("Pneumatics unlocked");
+      }
+      else{
+        pneumaticLock = true;
+        nh.loginfo("Pneumatics locked");
+      }
       break;
-    case 1://Torp 2
-      activatePneumatics(torp2Pin, 250);
+    case 1://Torp 1
+      if(!pneumaticLock){
+        nh.loginfo("Firing torpedo 1");
+        activatePneumatics(torp1Pin, 250);
+      }
       break;
-    case 2://Drop 1
-      activatePneumatics(drop1Pin, 250);
+    case 2://Torp 2
+      if(!pneumaticLock){
+        nh.loginfo("Firing torpedo 2");
+        activatePneumatics(torp2Pin, 250);
+      }
       break;
-    case 3://Drop 2
-      activatePneumatics(drop2Pin, 250);
+    case 3://Drop 1
+      if(!pneumaticLock){
+        nh.loginfo("Releasing dropper 1");
+        activatePneumatics(drop1Pin, 250);
+      }
       break;
-    case 4://Arm open
-      activatePneumatics(armOpenPin, 3000);
+    case 4://Drop 2
+      if(!pneumaticLock){
+        nh.loginfo("Releasing dropper 1");
+        activatePneumatics(drop2Pin, 250);
+      }
       break;
-    case 5://Arm close
-      activatePneumatics(armClosePin, 3000);
+    case 5://Arm open
+      if(!pneumaticLock){
+        nh.loginfo("Opening arm");
+        activatePneumatics(armOpenPin, 3000);
+      }
+      break;
+    case 6://Arm close
+      if(!pneumaticLock){
+        nh.loginfo("Closing arm");
+        activatePneumatics(armClosePin, 3000);
+      }
       break;
     default:
       nh.logerror("Invalid pneumatics command");
@@ -90,8 +120,8 @@ void activatePneumatics(int pin, int duration){
   digitalWrite(pin, HIGH);
 }
 
-ros::Subscriber<msurobosub::MotorCommand> subMotorCommand("motorCommand", &motorCommandCallback);
-ros::Subscriber<msurobosub::PneumaticCommand> subPneumaticCommand("pneumaticCommand", &pneumaticCommandCallback);
+ros::Subscriber<msurobosub::MotorCommand> subMotorCommand("command/motor", &motorCommandCallback);
+ros::Subscriber<msurobosub::PneumaticCommand> subPneumaticCommand("command/pneumatic", &pneumaticCommandCallback);
 
 std_msgs::Header getHeader(){
   std_msgs::Header updated = std_msgs::Header();

@@ -11,8 +11,8 @@ ser = None
 
 def imuTalker():
 	global ser
-	pubImu = rospy.Publisher('imu', Imu, queue_size=10)
-	pubTemp = rospy.Publisher('temperature', Temperature, queue_size=10)
+	pubImu = rospy.Publisher('sensor_msgs/Imu', Imu, queue_size=10)
+	pubTemp = rospy.Publisher('sensor_msgs/Temperature', Temperature, queue_size=10)
 	rospy.init_node('imu')
 	rate = rospy.Rate(100)#Update at GEDC-6E update rate
 
