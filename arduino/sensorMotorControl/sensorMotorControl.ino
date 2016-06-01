@@ -19,12 +19,12 @@
 */
 
 const int numMotors = 6;
-const int torp1Pin = 2;
-const int torp2Pin = 3;
-const int drop1Pin = 4;
-const int drop2Pin = 5;
-const int armOpenPin = 6;
-const int armClosePin = 7;
+const int torp1Pin = 4;
+const int torp2Pin = 5;
+const int drop1Pin = 2;
+const int drop2Pin = 3;
+const int armOpenPin = 7;
+const int armClosePin = 6;
 const int hydroPin1 = 0;
 const int hydroPin2 = 1;
 const int hydroPin3 = 2;
@@ -52,11 +52,14 @@ Arduino_I2C_ESC motors[numMotors] = {
   Arduino_I2C_ESC(0x2B)//StrafeBottom
 };
 
+//Array for direction motor runs
+int direction[numMotors] = {1, 1, 1, 1, 1, 1};
+
 float maxThrust = .75;//Percent value indicating what power level we consider to be max thrust
 
 void motorCommandCallback(const msurobosub::MotorCommand& command){
   if(command.power <= 1 && command.power >= -1)
-    motors[command.motor_id].set(percentToThrottle(command.power));
+    motors[command.motor_id].set(percentToThrottle(command.power) * direction[command.motor_id]);
   else
     nh.logerror("Invalid motor command");
 }

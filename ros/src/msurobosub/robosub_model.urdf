@@ -15,33 +15,10 @@
 
 	<link name="arm">
 		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
 			<geometry>
 				<box size="0.05 0.4 0.05"/>
 			</geometry>
-		</visual>
-	</link>
-
-	<link name="torp1">
-		<visual>
-			<origin xyz="0 0 0" rpy="1.5708 0 0"/>
-			<geometry>
-				<cylinder length=".5" radius=".025"/>
-			</geometry>
-			<material name="black">
-				<color rgba=".1 .1 .1 1"/>
-			</material>
-		</visual>
-	</link>
-
-	<link name="torp2">
-		<visual>
-			<origin xyz="0 0 0" rpy="1.5708 0 0"/>
-			<geometry>
-				<cylinder length=".5" radius=".025"/>
-			</geometry>
-			<material name="black">
-				<color rgba=".1 .1 .1 1"/>
-			</material>
 		</visual>
 	</link>
 
@@ -52,33 +29,86 @@
 		<limit effort="30" velocity="1" lower="0" upper="30"/>
 	</joint>
 
+
+	<link name="torp1">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry>
+				<cylinder length=".5" radius=".025"/>
+			</geometry>
+			<material name="black">
+				<color rgba=".1 .1 .1 1"/>
+			</material>
+		</visual>
+	</link>
+
 	<joint name="base_to_torp1" type="fixed">
-		<origin xyz="-0.1 0.3 0.2" rpy="0 0 0"/>
+		<origin xyz="-0.1 0.3 0.2" rpy="1.5708 0 0"/>
 		<parent link="base_link"/>
 		<child link="torp1"/>
 	</joint>
 
+	<link name="torp2">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry>
+				<cylinder length=".5" radius=".025"/>
+			</geometry>
+			<material name="black">
+				<color rgba=".1 .1 .1 1"/>
+			</material>
+		</visual>
+	</link>
+
 	<joint name="base_to_torp2" type="fixed">
-		<origin xyz="0.1 0.3 0.2" rpy="0 0 0"/>
+		<origin xyz="0.1 0.3 0.2" rpy="1.5708 0 0"/>
 		<parent link="base_link"/>
 		<child link="torp2"/>
 	</joint>
 
-	<sensor name="cameraF" type="camera" update_rate="30">
-		<parent link="base_link"/>
-		<origin xyz="0 0 .2" rpy="0 0 0"/>
-		<camera width="480" height="640" format="png" hfov="120" near=".001" far="100"/>
-	</sensor>
+	<link name="cameraF">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry>
+				<box size=".05 .05 .05"/>
+			</geometry>
+		</visual>	
+	</link>
 
-	<sensor name="cameraD" type="camera" update_rate="30">
+	<joint name="base_to_camF" type="fixed">
+		<origin xyz="0 .5 0" rpy="0 0 0"/>
 		<parent link="base_link"/>
-		<origin xyz="0 .2 -.1" rpy="90 0 0"/>
-		<camera width="480" height="640" format="png" hfov="120" near=".001" far="100"/>
-	</sensor>
+		<child link="cameraF"/>
+	</joint>
 
-	<sensor name="imu0" type="imu">
+	<link name="cameraD">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry>
+				<box size=".05 .05 .05"/>
+			</geometry>
+		</visual>	
+	</link>
+
+	<joint name="base_to_camD" type="fixed">
+		<origin xyz="0 0 -.3" rpy="0 0 0"/>
 		<parent link="base_link"/>
-		<origin xyz=".01 0 -.03" rpy="0 0 180"/>	
-	</sensor>
+		<child link="cameraD"/>
+	</joint>
+
+	<link name="imu0">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry>
+				<box size=".05 .05 .05"/>
+			</geometry>
+		</visual>
+	</link>
+
+	<joint name="base_to_imu0" type="fixed">
+		<origin xyz=".1 -.3 0" rpy="0 0 0"/>	
+		<parent link="base_link"/>
+		<child link="imu0"/>
+	</joint>
 
 </robot>
