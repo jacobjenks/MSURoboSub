@@ -10,7 +10,7 @@ To build ROS:
 
 To make it so ROS can find our package:
 	Add the following line to the end of ~/.bashrc
-	source ~/MSURoboSub/ros/devel/setup.bash
+	source ~/MSURoboSub/msurobosub_ros/devel/setup.bash
 
 To start ROS:
 	roscore
