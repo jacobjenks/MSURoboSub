@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   rosserial_python
   message_generation
+  roscpp
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -50,6 +52,8 @@ add_message_files(
   MotorCommand.msg
   MotorStatus.msg
   Hydro.msg
+  Depth.msg
+  PneumaticCommand.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -118,6 +122,9 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+
+add_executable(state_publisher state_publisher.cpp)
+target_link_libraries(state_publisher ${catkin_LIBRARIES})
 
 ## Declare a C++ library
 # add_library(test

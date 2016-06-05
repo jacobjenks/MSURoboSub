@@ -1,0 +1,6 @@
+[submodule "ros_libs/viso2"]
+	path = ros_libs/viso2
+	url = https://github.com/srv/viso2.git
+[submodule "msurobosub_ros/src/viso2"]
+	path = msurobosub_ros/src/viso2
+	url = https://github.com/srv/viso2.git
