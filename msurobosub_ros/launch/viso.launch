@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<launch>
+	<node pkg="cv_camera" type="cv_camera_node" name="camDL">
+		<param name="device_id" value="0"/>
+		<param name="frame_id" value="sensor_msgs/stereo/left/"/>
+		<param name="image_width" value="640"/>
+		<param name="image_height" value="480"/>
+        </node>
+
+	<node pkg="cv_camera" type="cv_camera_node" name="camDR">
+		<param name="device_id" value="1"/>
+		<param name="frame_id" value="sensor_msgs/stereo/right/"/>
+		<param name="image_width" value="640"/>
+		<param name="image_height" value="480"/>
+        </node>
+
+
+	<node pkg="tf2_ros" type="static_transform_publisher" name="odom_broadcaster" args="0 0 0 0 0 0 0 map odom"/>
+        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_broadcaster" args="0 0 0 0 0 0 0 odom base_link"/>
+	<node pkg="tf2_ros" type="static_transform_publisher" name="camDL_broadcaster" args="-.5 0 0 0 0 0 0 base_link camDL"/>
+	<node pkg="tf2_ros" type="static_transform_publisher" name="camDR_broadcaster" args=".5 0 0 0 0 0 0 base_link camDR"/>
+	
+
+	<node pkg="viso2_ros" type="stereo_odometer" name="stereo_odometer">
+	</node>
+</launch>
