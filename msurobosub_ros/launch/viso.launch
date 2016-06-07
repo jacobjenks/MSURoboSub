@@ -1,27 +1,53 @@
 <?xml version="1.0"?>
 
 <launch>
-	<node pkg="cv_camera" type="cv_camera_node" name="camDL">
+
+	<node pkg="cv_camera" type="cv_camera_node" ns="sensors" name="camF">
 		<param name="device_id" value="0"/>
-		<param name="frame_id" value="sensor_msgs/stereo/left/"/>
+		<param name="frame_id" value="sensor_msgs/camF"/>
 		<param name="image_width" value="640"/>
 		<param name="image_height" value="480"/>
-        </node>
+    </node>
 
-	<node pkg="cv_camera" type="cv_camera_node" name="camDR">
+	<node pkg="cv_camera" type="cv_camera_node" ns="sensors/stereo_bot/" name="left">
 		<param name="device_id" value="1"/>
-		<param name="frame_id" value="sensor_msgs/stereo/right/"/>
+		<param name="frame_id" value="camDL"/>
 		<param name="image_width" value="640"/>
 		<param name="image_height" value="480"/>
-        </node>
+		<param name="camera_info_url" value="package://msurobosub/calibration/left.yaml"/>
+    </node>
 
+	<node pkg="cv_camera" type="cv_camera_node" ns="sensors/stereo_bot/" name="right">
+		<param name="device_id" value="2"/>
+		<param name="frame_id" value="camDR"/>
+		<param name="image_width" value="640"/>
+		<param name="image_height" value="480"/>
+		<param name="camera_info_url" value="package://msurobosub/calibration/left.yaml"/>
+    </node>
 
-	<node pkg="tf2_ros" type="static_transform_publisher" name="odom_broadcaster" args="0 0 0 0 0 0 0 map odom"/>
-        <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_broadcaster" args="0 0 0 0 0 0 0 odom base_link"/>
-	<node pkg="tf2_ros" type="static_transform_publisher" name="camDL_broadcaster" args="-.5 0 0 0 0 0 0 base_link camDL"/>
-	<node pkg="tf2_ros" type="static_transform_publisher" name="camDR_broadcaster" args=".5 0 0 0 0 0 0 base_link camDR"/>
+	<node ns="sensors/stereo_bot/left" pkg="image_proc" type="image_proc" name="image_proc_camDL">
+	</node>
+	<node ns="sensors/stereo_bot/right" pkg="image_proc" type="image_proc" name="image_proc_camDL">
+	</node>
+
+	<!--
+	<node ns="sensors/stereo_bot/left" pkg="stereo_image_proc" type="stereo_image_proc" name="image_proc">
+		<rosparam file=""/>
+	</node>
+	<node ns="sensors/stereo_bot/right" pkg="stereo_image_proc" type="stereo_image_proc" name="image_proc">
+		<rosparam file=""/>
+	</node>
+	-->
+
+	<node pkg="tf2_ros" type="static_transform_publisher" name="odom_broadcaster" args="0 0 0 0 0 0 1 map odom"/>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_broadcaster" args="0 0 0 0 0 0 1 odom base_link"/>
+	<node pkg="tf2_ros" type="static_transform_publisher" name="camDL_broadcaster" args="-0.5 0 0 0 0 0 1 base_link camDL"/>
+	<node pkg="tf2_ros" type="static_transform_publisher" name="camDR_broadcaster" args="0.5 0 0 0 0 0 1 base_link camDR"/>
 	
 
 	<node pkg="viso2_ros" type="stereo_odometer" name="stereo_odometer">
+		<remap from="stereo" to="/sensors/stereo_bot/"/>
+		<remap from="image" to="image_rect"/>
+		<param name="approximate_sync" value="true"/>
 	</node>
 </launch>

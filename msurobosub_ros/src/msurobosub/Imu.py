@@ -18,11 +18,11 @@ def imuTalker():
 
 	imuMsg = Imu()
 	imuMsg.header.seq = 0
-	imuMsg.header.frame_id = "0"
+	imuMsg.header.frame_id = "imu0"
 	
 	tempMsg = Temperature()
 	tempMsg.header.seq = 0
-	tempMsg.header.frame_id = "0"
+	tempMsg.header.frame_id = "imu0"
 
 	#These need to be updated to reflect actual covariance
 	imuMsg.orientation_covariance = [1.0,0.0,0.0,
