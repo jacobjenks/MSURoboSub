@@ -33,7 +33,8 @@ const int depthPin = 3;
 bool pneumaticLock = true;
 
 //PSI at water surface - change when elevation changes
-const float surfacePSI = 10.696;
+//float surfacePSI = 10.696;
+float surfacePSI = -1;
 
 ros::NodeHandle nh;
 msurobosub::MotorStatus motorStatusMsg;
@@ -212,8 +213,13 @@ void sensorUpdate(){
   //Convert depth sensor reading to depth in meters
   depthMsg.header = getHeader(depthMsg.header);
   depthMsg.psi = (analogRead(depthPin) * .0048828125 - 1)*12.5;
+  
+  if(surfacePSI == -1)
+    surfacePSI = depthMsg.psi;
+  
   depthMsg.depth = ((analogRead(depthPin) * .0048828125 - 1)*12.5 - surfacePSI)*.7039;
   pubDepth.publish(&depthMsg);
+
 }
 
 void loop() {
