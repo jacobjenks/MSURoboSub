@@ -123,8 +123,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(state_publisher state_publisher.cpp)
-target_link_libraries(state_publisher ${catkin_LIBRARIES})
+#add_executable(state_publisher state_publisher.cpp)
+#target_link_libraries(state_publisher ${catkin_LIBRARIES})
 
 ## Declare a C++ library
 # add_library(test

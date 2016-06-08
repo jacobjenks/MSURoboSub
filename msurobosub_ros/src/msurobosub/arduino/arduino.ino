@@ -33,15 +33,15 @@ const int depthPin = 3;
 bool pneumaticLock = true;
 
 //PSI at water surface - change when elevation changes
-const float surfacePSI = 15;
+const float surfacePSI = 10.696;
 
 ros::NodeHandle nh;
 msurobosub::MotorStatus motorStatusMsg;
-ros::Publisher pubMotorStatus("sensor_msgs/MotorStatus", &motorStatusMsg);
+ros::Publisher pubMotorStatus("sensors/motor_status", &motorStatusMsg);
 msurobosub::Depth depthMsg;
-ros::Publisher pubDepth("sensor_msgs/Depth", &depthMsg);
+ros::Publisher pubDepth("sensors/depth", &depthMsg);
 msurobosub::Hydro hydroMsg;
-ros::Publisher pubHydro("sensor_msgs/Hydrophone", &hydroMsg);
+ros::Publisher pubHydro("sensors/hydrophone", &hydroMsg);
 
 Arduino_I2C_ESC motors[numMotors] = {
   Arduino_I2C_ESC(0x2C),//ForwardPort
@@ -209,9 +209,10 @@ void sensorUpdate(){
   hydroMsg.degree = 0;
   pubHydro.publish(&hydroMsg);
 
-  //Convert depth sensor reading to PSI
+  //Convert depth sensor reading to depth in meters
   depthMsg.header = getHeader(depthMsg.header);
-  depthMsg.depth = ((analogRead(depthPin) * .0048828125 - 1)*12.5 - surfacePSI)/0.433;
+  depthMsg.psi = (analogRead(depthPin) * .0048828125 - 1)*12.5;
+  depthMsg.depth = ((analogRead(depthPin) * .0048828125 - 1)*12.5 - surfacePSI)*.7039;
   pubDepth.publish(&depthMsg);
 }
 

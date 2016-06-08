@@ -11,8 +11,8 @@ ser = None
 
 def imuTalker():
 	global ser
-	pubImu = rospy.Publisher('sensor_msgs/Imu', Imu, queue_size=10)
-	pubTemp = rospy.Publisher('sensor_msgs/Temperature', Temperature, queue_size=10)
+	pubImu = rospy.Publisher('sensors/imu', Imu, queue_size=10)
+	pubTemp = rospy.Publisher('sensors/temperature', Temperature, queue_size=10)
 	rospy.init_node('imu')
 	rate = rospy.Rate(100)#Update at GEDC-6E update rate
 
@@ -29,13 +29,13 @@ def imuTalker():
 									 0.0,1.0,0.0,
 									 0.0,0.0,1.0]
 
-	imuMsg.angular_velocity_covariance = [1.0,0.0,0.0,
-					  					0.0,1.0,0.0,
-					  					0.0,0.0,1.0]
+	imuMsg.angular_velocity_covariance = [4119,0.0,0.0,
+					  					0.0,2451,0.0,
+					  					0.0,0.0,1059]
 
-	imuMsg.linear_acceleration_covariance = [1.0,0.0,0.0,
-						 					0.0,1.0,0.0,
-						 					0.0,0.0,1.0]
+	imuMsg.linear_acceleration_covariance = [3.14,0.0,0.0,
+						 					0.0,9.291,0.0,
+						 					0.0,0.0,3.633]
 
 	try: 
 		ser = serial.Serial(imuPort, imuBaud)
