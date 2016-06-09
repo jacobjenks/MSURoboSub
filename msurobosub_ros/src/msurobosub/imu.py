@@ -4,6 +4,7 @@ import rospy
 import re
 import numpy as np
 from sensor_msgs.msg import Imu, Temperature
+import math
 
 imuPort = '/dev/ttyUSB0'
 imuBaud = 115200
@@ -29,13 +30,13 @@ def imuTalker():
 									 0.0,1.0,0.0,
 									 0.0,0.0,1.0]
 
-	imuMsg.angular_velocity_covariance = [4119,0.0,0.0,
-					  					0.0,2451,0.0,
-					  					0.0,0.0,1059]
+	imuMsg.angular_velocity_covariance = [1,0.0,0.0,
+					  					0.0,1,0.0,
+					  					0.0,0.0,1]
 
-	imuMsg.linear_acceleration_covariance = [3.14,0.0,0.0,
-						 					0.0,9.291,0.0,
-						 					0.0,0.0,3.633]
+	imuMsg.linear_acceleration_covariance = [1,0.0,0.0,
+						 					0.0,1,0.0,
+						 					0.0,0.0,1]
 
 	try: 
 		ser = serial.Serial(imuPort, imuBaud)
@@ -58,15 +59,16 @@ def imuTalker():
 
 		#Gyro data
 		data = getImuData("$PSPA,G\r\n")
-		imuMsg.angular_velocity.x = data[0]
-		imuMsg.angular_velocity.y = data[1]
-		imuMsg.angular_velocity.z = data[2]
+		imuMsg.angular_velocity.x = data[0] * math.pi/180/1000
+		imuMsg.angular_velocity.y = data[1] * math.pi/180/1000
+		imuMsg.angular_velocity.z = data[2] * math.pi/180/1000
 		
 		#Accelerometer data
+		#Converted from milli-g's to m/s^2
 		data = getImuData("$PSPA,A\r\n")
-		imuMsg.linear_acceleration.x = data[0] 
-		imuMsg.linear_acceleration.y = data[1]
-		imuMsg.linear_acceleration.z = data[2]
+		imuMsg.linear_acceleration.x = data[0] * .00981 
+		imuMsg.linear_acceleration.y = data[1] * .00981
+		imuMsg.linear_acceleration.z = data[2] * .00981
 
 		#Temperature data
 		data = getImuData("$PSPA,Temp\r\n")
