@@ -34,5 +34,6 @@ Dependencies that need to be installed separately:
 	ros-indigo-rosserial-arduino
 	ros-indigo-robot-localization
 	ros-indigo-cv-camera
+	ros-indigo-hector-worldmodel
 	pyserial
 	Arduino_I2C_ESC (Bluerobotics)
