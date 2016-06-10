@@ -11,7 +11,7 @@ sensorReadings = dict()
 
 def saveVariance():
 	global sensorReadings
-	f = open('calibration/sensor_variance.txt', 'w')
+	f = open('/home/robosub/MSURoboSub/msurobosub_ros/src/msurobosub/calibration/sensor_variance.txt', 'w')
 	for key in sorted(sensorReadings):
 		f.write("%s variance: %.3f\n" % (key, np.var(sensorReadings[key])))
 		f.write("%s average: %.3f\n" % (key, np.average(sensorReadings[key])))

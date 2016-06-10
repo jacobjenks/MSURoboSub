@@ -15,14 +15,19 @@ class TaskStatus(Enum):
 
 class Task:
 	priority = 0
-	subTasks = array()	
+	subTasks = None	
 	targetObject
 	state = TaskStatus.waiting
 	controlPub = None
+	name = "Task"
 
-	def __init__(self, priority = 0):
-		global taskID
+	def __init__(self, priority = 0, name = "Task", subTasks = array()):
 		self.priority = priority
+		self.name = name
+		if !isinstance(subTasks, list):
+			rospy.logError("Invalid subTask list")
+		else:
+			self.subTasks = subTasks
 		rospy.init_node('Task', anonymous=True)
 		self.controlPub = rospy.Publisher('controller/pose', Pose, queue_size=5)
 		rospy.spin()
@@ -30,16 +35,22 @@ class Task:
 	#Callback function for any subscribers the task uses to monitor its own status
 	def monitorStatus():
 	
+	#Run subtasks, then run self task
 	def run(self):
+		subTasksDone = True 
+
 		#Run subtasks in order
 		for task in self.subTasks:
 			if task.status == TaskStatus.waiting
+				subTasksDone = False
 				break
 			elif task.status == TaskStatus.ready:
+				subTasksDone = False
 				task.run()
 
-		#Run this task
-		self.runSelf()
+		#Run this task if all subtasks are complete
+		if subTasksDone:	
+			self.runSelf()
 
 	def runSelf(self):
 
@@ -51,15 +62,15 @@ def MaintainDepthTask(Task):
 	currentDepth = 0
 	motorCommand = MotorCommand()
 
+	def __init__(self)
+		Task.__init__(self, 1, "MaintainDepth")
+		self.depthSub = rospy.Subscriber("sensors/depth", Depth, monitorStatus)
+		self.status = TaskStatus.complete
+
 	def monitorStatus(self, depth):
 		if depth.depth < depthThreshold:
 			self.state = TaskStatus.ready
 		self.currentDepth = depth.depth
-
-	def __init__(self):
-		Task.__init__(self, 1)
-		self.depthSub = rospy.Subscriber("sensors/depth", Depth, monitorStatus)
-		self.status = TaskStatus.complete
 
 	def runSelf(self):
 		if currentDepth > depthThreshold:
@@ -71,8 +82,7 @@ def MaintainDepthTask(Task):
 class MoveToTask(Task):
 
 	currentPose = None		#base_link Pose
-	targetFrame = None		#TF frame for targetPose	
-	targetPose = None		#Pose we want to move to relative to target frame
+	targetOdom = None		#nav_msgs/Odometry we want to move to relative to target frame
 	targetFound = False		#Whether or not we know where the target is yet
 	speed = 0				#Speed %
 	proximityThresh = .1	#Distance (meters) threshold for arriving at target
@@ -80,10 +90,19 @@ class MoveToTask(Task):
 	imuSub = None
 	odomSub = None
 	targetSub = None
+	
+	def __init__(self, priority, name, subTasks, speed, targetOdom, proximityThresh, bumpThresh):
+		Task.__init__(self, priority, name, subTasks)
+		self.imuSub = rospy.Subscriber("sensors/imu", Imu, self.monitorStatus)
+		self.odomSub = rospy.Subscriber("odometry/filtered", Odometry, self.monitorStatus)
+		self.targetSub = rospy.Subscriber("worldmodel/object/pose", PoseWithCovariance, self.monitorStatus)
+		self.speed = speed
+		self.targetOdom = targetOdom
+		
 
 	def monitorStatus(self, msg):
 		if type(msg).__name__ == "Imu":
-			if self.bumpThresh > 0 and any(math.abs(x) > self.bumpThresh for x in msg.angular_velocity)
+			if self.bumpThresh > 0 and (math.abs(msg.angular_velocity.x) > self.bumpThresh or math.abs(msg.angular_velocity.y > self.bumpThresh)
 				self.status = TaskStatus.complete
 		elif type(msg).__name__ == "Odometry":
 			self.currentPose = msg.pose
@@ -93,18 +112,61 @@ class MoveToTask(Task):
 				self.targetFound == True
 				self.status = TaskStatus.ready
 			targetPose = msg.pose
-	
-	def __init__(self, targetObject, positionOffset):
-		Task.__init__(self)
-		imuSub = rospy.Subscriber("sensors/imu", Imu, monitorStatus)
-		odomSub = rospy.Subscriber("odometry/filtered", Odometry, monitorStatus)
-		targetSub = rospy.Subscriber("worldmodel/object/pose", PoseWithCovariance, monitorStatus)
-		
+			
 	def runSelf(self):
 		#TODO: send targetPose to controller
 
+
+class PneumaticTask(Task):
+
+	pneuPub = None
+	pneuMsg = None
+
+	def __init__(self, priority, name, subTasks, pneuID)
+		'''
+		@param pneuID: ID of the pneumatic device to activate
+		'''
+		Task.__init__(self, name, priority, subTasks)	
+		self.pneuPub = rospy.Publisher("command/pneumatic", PneumaticCommand, queue_size=5)
+		self.pneuMsg = PneumaticCommand()
+		self.pneuMsg.command = pneuID
+
+	def runSelf(self):
+		self.pneuMsg.header.seq = 0
+		self.pneuMsg.header.frame_id = "base_link"
+		self.pneuMsg.header.stamp = rospy.get_rostime()
+		pneuPub.publish(self.pneuMsg)
+		
+class TestBuoyTask(Task):
+
+	def __init__(self):
+		subTasks = array()
+		subTasks.append(MaintainDepthTask())
+
+		poseMsg = Pose()	
+		poseMsg.header.seq = 0
+		poseMsg.header.frame_id = "buoy_red"
+		poseMsg.header.stamp = rospy.get_rostime()
+		poseMsg.pose.position.x = 0
+		poseMsg.pose.position.y = 0
+		poseMsg.pose.position.z = 0
+
+		subTasks.append(MoveToTask(2, "Buoy", array(), 1, poseMsg, .1, 1))
+
+		Task.__init__(self, "Mission", "1", subTasks)
+
+		#TODO: Create competition mission, and specific testing missions
+
+'''
+class CompetitionMissionTask(Task):
+	def __init__(self):
+		
+
+'''
+
+
 if __name__ == '__main__':
 	try:
-		#imuTalker()
+		TestBuoyTask()	
 	except rospy.ROSInterruptException:
 		pass
