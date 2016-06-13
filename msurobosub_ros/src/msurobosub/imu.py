@@ -58,6 +58,7 @@ def imuTalker():
 		imuMsg.orientation.z = data[3]
 
 		#Gyro data
+		#Converted from  millidegrees to radians
 		data = getImuData("$PSPA,G\r\n")
 		imuMsg.angular_velocity.x = data[0] * math.pi/180/1000
 		imuMsg.angular_velocity.y = data[1] * math.pi/180/1000
@@ -66,9 +67,9 @@ def imuTalker():
 		#Accelerometer data
 		#Converted from milli-g's to m/s^2
 		data = getImuData("$PSPA,A\r\n")
-		imuMsg.linear_acceleration.x = data[0] * .00981 
-		imuMsg.linear_acceleration.y = data[1] * .00981
-		imuMsg.linear_acceleration.z = data[2] * .00981
+		imuMsg.linear_acceleration.x = data[0] * 9.80665/1000
+		imuMsg.linear_acceleration.y = data[1] * 9.80665/1000
+		imuMsg.linear_acceleration.z = data[2] * 9.80665/1000
 
 		#Temperature data
 		data = getImuData("$PSPA,Temp\r\n")
