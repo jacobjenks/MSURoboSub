@@ -25,7 +25,6 @@ def imuTalker():
 	tempMsg.header.seq = 0
 	tempMsg.header.frame_id = "imu0"
 
-	#These need to be updated to reflect actual covariance
 	imuMsg.orientation_covariance = [.000001,0.0,0.0,
 									 0.0,.000001,0.0,
 									 0.0,0.0,.000001]

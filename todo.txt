@@ -1,3 +1,1 @@
-Update frame_id for all sensors
-Measure IMU variance
 Try to get viso2_ros working
