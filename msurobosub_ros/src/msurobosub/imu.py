@@ -26,17 +26,17 @@ def imuTalker():
 	tempMsg.header.frame_id = "imu0"
 
 	#These need to be updated to reflect actual covariance
-	imuMsg.orientation_covariance = [1.0,0.0,0.0,
-									 0.0,1.0,0.0,
-									 0.0,0.0,1.0]
+	imuMsg.orientation_covariance = [.000001,0.0,0.0,
+									 0.0,.000001,0.0,
+									 0.0,0.0,.000001]
 
-	imuMsg.angular_velocity_covariance = [1,0.0,0.0,
-					  					0.0,1,0.0,
-					  					0.0,0.0,1]
+	imuMsg.angular_velocity_covariance = [.000001,0.0,0.0,
+					  					0.0,.000001,0.0,
+					  					0.0,0.0,.000001]
 
-	imuMsg.linear_acceleration_covariance = [1,0.0,0.0,
-						 					0.0,1,0.0,
-						 					0.0,0.0,1]
+	imuMsg.linear_acceleration_covariance = [.00117,0.0,0.0,
+						 					0.0,.00277,0.0,
+						 					0.0,0.0,.00034]
 
 	try: 
 		ser = serial.Serial(imuPort, imuBaud)
