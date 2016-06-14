@@ -18,10 +18,10 @@ def saveVariance():
 		f.write("%s average: %.3f\n" % (key, np.average(sensorReadings[key])))
 		f.write("%s min: %.3f\n" % (key, np.min(sensorReadings[key])))
 		f.write("%s max: %.3f\n" % (key, np.max(sensorReadings[key])))
-		print "%s variance: %.3f\n" % (key, np.var(sensorReadings[key]))
-		print "%s average: %.3f\n" % (key, np.average(sensorReadings[key]))
-		print "%s min: %.3f\n" % (key, np.min(sensorReadings[key]))
-		print "%s max: %.3f\n" % (key, np.max(sensorReadings[key]))
+		print "%s variance: %.3f" % (key, np.var(sensorReadings[key]))
+		print "%s average: %.3f" % (key, np.average(sensorReadings[key]))
+		print "%s min: %.3f" % (key, np.min(sensorReadings[key]))
+		print "%s max: %.3f" % (key, np.max(sensorReadings[key]))
 
 
 #Recursively dig through sensor message and record all readings

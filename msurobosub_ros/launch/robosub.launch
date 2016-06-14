@@ -18,9 +18,9 @@
 		<param name="port" value="/dev/ttyACM0"/>
 	</node>
 
-	<!-- IMU data -->
-	<node respawn="true" pkg="msurobosub" type="imu.py" name="imu">
-	</node>
+	<!-- Sensor data -->
+	<node respawn="true" pkg="msurobosub" type="imu.py" name="imu"></node>
+	<node respawn="true" pkg="msurobosub" type="depthOdom.py" name="depthOdom"></node>
 
 	<!-- Camera data -->
 
@@ -54,7 +54,8 @@
 	<!-- Static transforms -->
 	<node pkg="tf2_ros" type="static_transform_publisher" name="odom_broadcaster" args="0 0 0 0 0 0 1 map odom"/>
 	<!--<node pkg="tf2_ros" type="static_transform_publisher" name="base_link_broadcaster" args="0 0 0 0 0 0 1 odom base_link"/>-->
-	<node pkg="tf2_ros" type="static_transform_publisher" name="imu0_broadcaster" args="0 0 0 1 0 0 1 base_link imu0"/>
+	<node pkg="tf2_ros" type="static_transform_publisher" name="imu0_broadcaster" args="0 1 0 0 0 0 1 base_link imu0"/>
+	<node pkg="tf2_ros" type="static_transform_publisher" name="odom0_broadcaster" args="0 0 0 0 0 0 1 base_link depth"/>
 
 	<!-- State estimate for the robot given IMU data -->
 	<!-- wiki.ros.org/robot_localization -->
@@ -70,8 +71,8 @@
 		<param name="odom_frame" value="odom"/>
 		<param name="base_link_frame" value="base_link"/>
 		<param name="world_frame" value="odom"/>
-
 		<!--<param name="use_control" value="false"/>-->
+
 		<param name="imu0" value="sensors/imu"/> 	  <!-- Topic name for IMU data -->
 		<rosparam param="imu0_config">[false, false, false,<!-- Which state variables to from IMU to fuse -->
 true, true, true,
@@ -82,6 +83,16 @@ true, true, true]</rosparam>
 		<param name="imu0_differential" value="false"/>
 		<param name="imu0_relative" value="true"/>
 		<param name="imu0_remove_gravitational_acceleration" value="true"/>
+
+		<param name="odom0" value="odometry/depth"/>
+		<rosparam param="odom0_config">[false, false, true,
+false, false, false,
+false, false, false,
+false, false, false,
+false, false, false]</rosparam>
+		<param name="odom0_queue_size" value="2"/>
+		<param name="odom0_differential" value="true"/>
+		<param name="odom0_relative" value="true"/>
 	</node>
 
 	<!-- Keyboard input -->
@@ -155,5 +166,7 @@ true, true, true]</rosparam>
       <remap from="visualization_marker" to="worldmodel/visualization_marker" />
       <remap from="visualization_marker_array" to="worldmodel/visualization_marker_array" />
     </node>
+
+	<!--<node pkg="rqt" type="rqt" name="rqt"></node>-->
 
 </launch>

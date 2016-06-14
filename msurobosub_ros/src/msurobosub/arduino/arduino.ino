@@ -139,7 +139,7 @@ std_msgs::Header getHeader(std_msgs::Header h){
   std_msgs::Header updated = std_msgs::Header();
   updated.seq = h.seq + 1;
   updated.stamp = nh.now();
-  updated.frame_id = "0";
+  updated.frame_id = h.frame_id;
   return updated;
 }
 
@@ -168,8 +168,11 @@ void setup() {
 
   //Initialize messages
   motorStatusMsg.header = getHeader();
+  motorStatusMsg.header.frame_id = "0";
   hydroMsg.header = getHeader();
+  hydroMsg.header.frame_id = "hydro";
   depthMsg.header = getHeader();
+  depthMsg.header.frame_id = "depth";
   
   // Optional: Add these two lines to slow I2C clock to 12.5kHz from 100 kHz
   // This is best for long wire lengths to minimize errors
@@ -219,12 +222,11 @@ void sensorUpdate(){
   
   depthMsg.depth = ((analogRead(depthPin) * .0048828125 - 1)*12.5 - surfacePSI)*.7039;
   pubDepth.publish(&depthMsg);
-
 }
 
 void loop() {
   motorUpdate();
   sensorUpdate();
   nh.spinOnce();
-  delay(1000); // Update at roughly 4 hz
+  delay(250);
 }
