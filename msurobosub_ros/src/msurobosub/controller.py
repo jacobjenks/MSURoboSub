@@ -26,6 +26,12 @@ def odomCommandCallback(msg):
 	msgMot.power = 1
 	pubMot.publish(msgMot)
 
+#Make sure motor command is between -1 and 1
+def clampMotorCommand(msgMot):
+	if math.abs(msgMot.power) > 1:
+		msgMot.power = math.copysign(1, msgMot.power)
+	return msgMot
+
 def pid():
 	print("PID")
 

@@ -213,13 +213,14 @@ void sensorUpdate(){
   hydroMsg.degree = 0;
   pubHydro.publish(&hydroMsg);
 
-  //Convert depth sensor reading to depth in meters
   depthMsg.header = getHeader(depthMsg.header);
+  //Convert depth sensor reading to PSI
   depthMsg.psi = (analogRead(depthPin) * .0048828125 - 1)*12.5;
   
   if(surfacePSI == -1)
     surfacePSI = depthMsg.psi;
-  
+
+  //Convert difference between surface and current PSI to depth in meters.
   depthMsg.depth = ((analogRead(depthPin) * .0048828125 - 1)*12.5 - surfacePSI)*.13197839577;
   pubDepth.publish(&depthMsg);
 }
