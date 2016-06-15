@@ -220,7 +220,7 @@ void sensorUpdate(){
   if(surfacePSI == -1)
     surfacePSI = depthMsg.psi;
   
-  depthMsg.depth = ((analogRead(depthPin) * .0048828125 - 1)*12.5 - surfacePSI)*.7039;
+  depthMsg.depth = ((analogRead(depthPin) * .0048828125 - 1)*12.5 - surfacePSI)*.13197839577;
   pubDepth.publish(&depthMsg);
 }
 

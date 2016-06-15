@@ -31,7 +31,7 @@ def depthOdom():
 	for i in range(0, 36):
 		if i == identity:
 			identity = identity + 7
-			odomMsg.pose.covariance[i] = .647
+			odomMsg.pose.covariance[i] = .02298
 		else:
 			odomMsg.pose.covariance[i] = 0
 

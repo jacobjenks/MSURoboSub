@@ -1,1 +1,6 @@
 Try to get viso2_ros working
+
+Faster-RCNN
+	Install CUDA driver
+	Might need to remake CUDA
+	Use CUDNN - disabled for now
