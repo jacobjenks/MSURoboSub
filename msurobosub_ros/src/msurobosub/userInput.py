@@ -1,12 +1,7 @@
 #!/usr/bin/env python
-#--------------------------------------------------------------------#
-#
-#
-#
-#
-#--------------------------------------------------------------------#
-
 import rospy
+from datetime import datetime
+import math
 from keyboard.msg import Key
 from msurobosub.msg import MotorCommand
 from msurobosub.msg import PneumaticCommand
@@ -16,56 +11,61 @@ comMotor = None
 msgMotor = None
 msgPneu = None
 
-motorPower = .01
+commandTimeout = None
+commandTimeoutDelay = 100
+
+motorPower = .35
+
+#Map motor activations to key presses
+#Key id maps to list of motor ids to activate (keys), and the direction with which to activate (values)
+keyMapping = {119: {0: 1, 1: 1},#w, forward
+			  97:  {4: -1, 5: -1},#a, strafe left
+			  115: {0: -1, 1: -1},#s, reverse
+			  100: {4: 1, 5: 1},#d, strafe right
+			  113: {0: -1, 1: 1},#q, rotate left
+			  101: {0: 1, 1: -1},#e, rotate right
+			  99:  {2: -1, 3: -3},#c, descend
+			  32:  {2: 1, 3: 1},#space, ascend
+			  120: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0}#x, stop all motors 
+			 }
 
 #@param Key key: The message for the key that was pressed
 #@param bool down: Whether the keypress was up or down
 def userInput(key, down):
-	global msgMotor, msgPneu, comPneu, comMotor, motorPower
+	global msgMotor, msgPneu, comPneu, comMotor, motorPower, keyMapping, commandTimeout, commandTimeoutDelay
+	
+	key = int(key.code)
 
-	#turn motors on if keydown, turn off if keyup
-	activate = motorPower if down else 0 
+	if not down:
+		commandTimeout[key] = datetime.now().microsecond + commandTimeoutDelay
+		return
 
-	#motors
-	if(key.code == 119):#w, forward
-		msgMotor.power[0] = 1 * activate
-		msgMotor.power[1] = 1 * activate
-	elif(key.code == 97):#a, strafe left
-		msgMotor.power[4] = -1 * activate
-		msgMotor.power[5] = -1 * activate
-	elif(key.code == 115):#s, backward
-		msgMotor.power[0] = -1 * activate
-		msgMotor.power[1] = -1 * activate
-	elif(key.code == 100):#d, strafe right
-		msgMotor.power[4] = 1 * activate
-		msgMotor.power[5] = 1 * activate
-	elif(key.code == 113):#q, rotate left
-		msgMotor.power[4] = -1 * activate
-		msgMotor.power[5] = 1 * activate
-	elif(key.code == 101):#e, rotate right
-		msgMotor.power[4] = 1 * activate
-		msgMotor.power[5] = -1 * activate
-	elif(key.code == 99):#c, descend
-		msgMotor.power[2] = -1 * activate
-		msgMotor.power[3] = -1 * activate
-	elif(key.code == 32):#space, ascend
-		msgMotor.power[2] = 1 * activate
-		msgMotor.power[3] = 1 * activate
+	setMotorPower(key)
+	
 	#pneumatics
-	elif(key.code == 108 and down):#l, toggle pneumatic lock
+	if(key == 108 and down):#l, toggle pneumatic lock
 		msgPneu.command = 0
-	elif(key.code == 49 and down):#1, fire torpedo
+	elif(key == 49 and down):#1, fire torpedo
 		msgPneu.command = 1
-	elif(key.code == 50 and down):#2, fire torpedo
+	elif(key == 50 and down):#2, fire torpedo
 		msgPneu.command = 2
-	elif(key.code == 51 and down):#3, dropper
+	elif(key == 51 and down):#3, dropper
 		msgPneu.command = 3
-	elif(key.code == 52 and down):#4, dropper
+	elif(key == 52 and down):#4, dropper
 		msgPneu.command = 4
-	elif(key.code == 53 and down):#5, arm open
+	elif(key == 53 and down):#5, arm open
 		msgPneu.command = 5
-	elif(key.code == 54 and down):#6, arm close
+	elif(key == 54 and down):#6, arm close
 		msgPneu.command = 6
+
+#Convert keypress to motor power setting, with optional power setting
+def setMotorPower(key, power = None):
+	global msgMotor, keyMapping, motorPower
+	if power == None:
+		power = motorPower
+	if key in keyMapping:
+		for key, value in keyMapping[key].items():
+			msgMotor.power[key] =  value * power
 
 '''
 Motor IDs:
@@ -107,7 +107,10 @@ def keyUp(key):
 	userInput(key, False)
 
 def main():
-	global pubMotor, pubPneu, msgMotor, msgPneu, motorPower
+	global pubMotor, pubPneu, msgMotor, msgPneu, motorPower, commandTimeout
+
+	commandTimeout = dict()
+
 	rospy.init_node('UserInput')
 	rospy.Subscriber("keyboard/keydown", Key, keyDown)
 	rospy.Subscriber("keyboard/keyup", Key, keyUp)
@@ -124,8 +127,15 @@ def main():
 	msgPneu.header.stamp = rospy.get_rostime()
 	msgPneu.header.frame_id = "0"
 
-	rate = rospy.Rate(4)
+	rate = rospy.Rate(8)
 	while not rospy.is_shutdown():
+		#Keypresses time out after an interval to make keyboard control still work when connecting via remote desktop
+		#since remote desktop constantly sends keyups/downs while a button is held down
+		for key, value in commandTimeout.items():
+			if datetime.now().microsecond > value:
+				setMotorPower(key, 0)
+				commandTimeout.pop(key, None)
+			
 		sendMotorCommand()
 		sendPneuCommand()
 		rate.sleep()
