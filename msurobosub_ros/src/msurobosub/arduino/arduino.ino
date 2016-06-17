@@ -45,12 +45,12 @@ msurobosub::Hydro hydroMsg;
 ros::Publisher pubHydro("sensors/hydrophone", &hydroMsg);
 
 Arduino_I2C_ESC motors[numMotors] = {
-  Arduino_I2C_ESC(0x2C),//ForwardPort
-  Arduino_I2C_ESC(0x2F),//ForwardStar
-  Arduino_I2C_ESC(0x2D),//DepthFore
-  Arduino_I2C_ESC(0x30),//DepthAft
-  Arduino_I2C_ESC(0x2E),//StrafeTop
-  Arduino_I2C_ESC(0x2B)//StrafeBottom
+  Arduino_I2C_ESC(0x2F),//ForwardPort
+  Arduino_I2C_ESC(0x30),//ForwardStar
+  Arduino_I2C_ESC(0x35),//DepthFore
+  Arduino_I2C_ESC(0x37),//DepthAft
+  Arduino_I2C_ESC(0x36),//StrafeTop
+  Arduino_I2C_ESC(0x38)//StrafeBottom
 };
 
 //Array for direction motor runs
@@ -143,6 +143,50 @@ std_msgs::Header getHeader(std_msgs::Header h){
   return updated;
 }
 
+//Run actual update function that updates values from motor controllers
+void motorUpdate(){
+  for(int i = 0; i < numMotors; i++){
+    motors[i].update();
+    motorStatusMsg.header = getHeader(motorStatusMsg.header);
+    motorStatusMsg.motor_id = i;
+    motorStatusMsg.connected = motors[i].isAlive() ? 1 : 0;
+    motorStatusMsg.rpm = motors[i].rpm();
+    motorStatusMsg.voltage = motors[i].voltage();
+    motorStatusMsg.current = motors[i].current();
+    motorStatusMsg.temperature = motors[i].temperature();
+    //pubMotorStatus.publish(&motorStatusMsg); 
+  }
+}
+
+//This function converts a value between -1 and 1 to a throttle value
+//Actual throttle values are -32767 to 32767
+int16_t percentToThrottle(float t){
+  return (int16_t)(t * 32767) * maxThrust;
+}
+
+void sensorUpdate(){
+  int hydrophone_sensor_pin1 = analogRead(hydroPin1);
+  int hydrophone_sensor_pin2 = analogRead(hydroPin2);
+  int hydrophone_sensor_pin3 = analogRead(hydroPin3);
+
+  //Calculate hydrophone heading and distance
+  hydroMsg.header = getHeader(hydroMsg.header);
+  hydroMsg.distance = 0; 
+  hydroMsg.degree = 0;
+  //pubHydro.publish(&hydroMsg);
+
+  depthMsg.header = getHeader(depthMsg.header);
+  //Convert depth sensor reading to PSI
+  depthMsg.psi = (analogRead(depthPin) * .0048828125 - 1)*12.5;
+  
+  if(surfacePSI == -1)
+    surfacePSI = depthMsg.psi;
+
+  //Convert difference between surface and current PSI to depth in meters.
+  depthMsg.depth = ((analogRead(depthPin) * .0048828125 - 1)*12.5 - surfacePSI)*.13197839577;
+  //pubDepth.publish(&depthMsg);
+}
+
 void setup() {
   Wire.begin();
   nh.initNode();
@@ -176,53 +220,8 @@ void setup() {
   
   // Optional: Add these two lines to slow I2C clock to 12.5kHz from 100 kHz
   // This is best for long wire lengths to minimize errors
-  //TWBR = 158;  
-  //TWSR |= bit (TWPS0);
-}
-
-
-//Run actual update function that updates values from motor controllers
-void motorUpdate(){
-  for(int i = 0; i < numMotors; i++){
-    motors[i].update();
-    motorStatusMsg.header = getHeader(motorStatusMsg.header);
-    motorStatusMsg.motor_id = i;
-    motorStatusMsg.connected = motors[i].isAlive() ? 1 : 0;
-    motorStatusMsg.rpm = motors[i].rpm();
-    motorStatusMsg.voltage = motors[i].voltage();
-    motorStatusMsg.current = motors[i].current();
-    motorStatusMsg.temperature = motors[i].temperature();
-    pubMotorStatus.publish(&motorStatusMsg); 
-  }
-}
-
-//This function converts a value between -1 and 1 to a throttle value
-//Actual throttle values are -32767 to 32767
-int16_t percentToThrottle(float t){
-  return (int16_t)(t * 32767) * maxThrust;
-}
-
-void sensorUpdate(){
-  int hydrophone_sensor_pin1 = analogRead(hydroPin1);
-  int hydrophone_sensor_pin2 = analogRead(hydroPin2);
-  int hydrophone_sensor_pin3 = analogRead(hydroPin3);
-
-  //Calculate hydrophone heading and distance
-  hydroMsg.header = getHeader(hydroMsg.header);
-  hydroMsg.distance = 0; 
-  hydroMsg.degree = 0;
-  pubHydro.publish(&hydroMsg);
-
-  depthMsg.header = getHeader(depthMsg.header);
-  //Convert depth sensor reading to PSI
-  depthMsg.psi = (analogRead(depthPin) * .0048828125 - 1)*12.5;
-  
-  if(surfacePSI == -1)
-    surfacePSI = depthMsg.psi;
-
-  //Convert difference between surface and current PSI to depth in meters.
-  depthMsg.depth = ((analogRead(depthPin) * .0048828125 - 1)*12.5 - surfacePSI)*.13197839577;
-  pubDepth.publish(&depthMsg);
+  TWBR = 158;  
+  TWSR |= bit (TWPS0);
 }
 
 void loop() {

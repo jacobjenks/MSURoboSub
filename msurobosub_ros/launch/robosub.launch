@@ -96,8 +96,7 @@ false, false, false]</rosparam>
 	</node>
 
 	<!-- Keyboard input -->
-	<node respawn="true" pkg="keyboard" type="keyboard" name="keyboard">
-	</node> 
+	<node respawn="true" pkg="keyboard" type="keyboard" name="keyboard"></node> 
 
 	<node respawn="true" pkg="msurobosub" type="userInput.py" name="user_input">
 	</node>

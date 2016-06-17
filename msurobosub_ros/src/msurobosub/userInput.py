@@ -16,13 +16,15 @@ comMotor = None
 msgMotor = None
 msgPneu = None
 
+motorPower = .01
+
 #@param Key key: The message for the key that was pressed
 #@param bool down: Whether the keypress was up or down
 def userInput(key, down):
-	global comPneu, comMotor
+	global comPneu, comMotor, motorPower
 
 	#turn motors on if keydown, turn off if keyup
-	activate = down if 1 else 0 
+	activate = motorPower if down else 0 
 
 	#motors
 	if(key.code == 119):#w, forward
@@ -43,12 +45,12 @@ def userInput(key, down):
 	elif(key.code == 101):#e, rotate right
 		motorCommand(4, -1 * activate)
 		motorCommand(5, -1 * activate)
-	elif(key.code == 120):#c, descend
-		motorCommand(3, -1 * activate)
-		motorCommand(4, -1 * activate)	
+	elif(key.code == 99):#c, descend
+		motorCommand(2, -1 * activate)
+		motorCommand(3, -1 * activate)	
 	elif(key.code == 32):#space, ascend
+		motorCommand(2, 1 * activate)
 		motorCommand(3, 1 * activate)
-		motorCommand(4, 1 * activate)
 	#pneumatics
 	elif(key.code == 108 and down):#l, toggle pneumatic lock
 		pneuCommand(0)
@@ -106,7 +108,7 @@ def keyUp(key):
 	userInput(key, False)
 
 def main():
-	global pubMotor, pubPneu, msgMotor, msgPneu
+	global pubMotor, pubPneu, msgMotor, msgPneu, motorPower
 	rospy.init_node('UserInput')
 	rospy.Subscriber("keyboard/keydown", Key, keyDown)
 	rospy.Subscriber("keyboard/keyup", Key, keyUp)
@@ -122,6 +124,11 @@ def main():
 	msgPneu.header.seq = 0
 	msgPneu.header.stamp = rospy.get_rostime()
 	msgPneu.header.frame_id = "0"
+
+	#rate = rospy.Rate(1)
+	#while not rospy.is_shutdown():
+	#	motorCommand(0, motorPower)
+	#	rate.sleep()
 
 	rospy.spin()
 
