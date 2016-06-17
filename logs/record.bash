@@ -1,0 +1,1 @@
+rosbag record  command/motor command/pneumatic odometry/depth odometry/filtered sensors/camF/camera_raw sensors/camF/camera_info sensors/depth sensors/hydrophone sensors/imu sensors/motor_status sensors/temperature

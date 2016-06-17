@@ -54,7 +54,7 @@ Arduino_I2C_ESC motors[numMotors] = {
 };
 
 //Array for direction motor runs
-int direction[numMotors] = {1, 1, 1, 1, 1, 1};
+int direction[numMotors] = {1, -1, 1, 1, 1, 1};
 
 float maxThrust = .75;//Percent value indicating what power level we consider to be max thrust
 
