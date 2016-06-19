@@ -1,3 +1,2 @@
 Header header
-uint8 motor_id
-float32 power
+float32[6] power

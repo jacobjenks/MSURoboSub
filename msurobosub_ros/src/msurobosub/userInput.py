@@ -21,51 +21,51 @@ motorPower = .01
 #@param Key key: The message for the key that was pressed
 #@param bool down: Whether the keypress was up or down
 def userInput(key, down):
-	global comPneu, comMotor, motorPower
+	global msgMotor, msgPneu, comPneu, comMotor, motorPower
 
 	#turn motors on if keydown, turn off if keyup
 	activate = motorPower if down else 0 
 
 	#motors
 	if(key.code == 119):#w, forward
-		motorCommand(0, 1 * activate)
-		motorCommand(1, 1 * activate)
+		msgMotor.power[0] = 1 * activate
+		msgMotor.power[1] = 1 * activate
 	elif(key.code == 97):#a, strafe left
-		motorCommand(4, 1 * activate)
-		motorCommand(5, 1 * activate)	
+		msgMotor.power[4] = -1 * activate
+		msgMotor.power[5] = -1 * activate
 	elif(key.code == 115):#s, backward
-		motorCommand(0, -1 * activate)
-		motorCommand(1, -1 * activate)	
+		msgMotor.power[0] = -1 * activate
+		msgMotor.power[1] = -1 * activate
 	elif(key.code == 100):#d, strafe right
-		motorCommand(4, -1 * activate)
-		motorCommand(5, -1 * activate)
+		msgMotor.power[4] = 1 * activate
+		msgMotor.power[5] = 1 * activate
 	elif(key.code == 113):#q, rotate left
-		motorCommand(4, 1 * activate)
-		motorCommand(5, -1 * activate)
+		msgMotor.power[4] = -1 * activate
+		msgMotor.power[5] = 1 * activate
 	elif(key.code == 101):#e, rotate right
-		motorCommand(4, -1 * activate)
-		motorCommand(5, -1 * activate)
+		msgMotor.power[4] = 1 * activate
+		msgMotor.power[5] = -1 * activate
 	elif(key.code == 99):#c, descend
-		motorCommand(2, -1 * activate)
-		motorCommand(3, -1 * activate)	
+		msgMotor.power[2] = -1 * activate
+		msgMotor.power[3] = -1 * activate
 	elif(key.code == 32):#space, ascend
-		motorCommand(2, 1 * activate)
-		motorCommand(3, 1 * activate)
+		msgMotor.power[2] = 1 * activate
+		msgMotor.power[3] = 1 * activate
 	#pneumatics
 	elif(key.code == 108 and down):#l, toggle pneumatic lock
-		pneuCommand(0)
+		msgPneu.command = 0
 	elif(key.code == 49 and down):#1, fire torpedo
-		pneuCommand(1)
+		msgPneu.command = 1
 	elif(key.code == 50 and down):#2, fire torpedo
-		pneuCommand(2)
+		msgPneu.command = 2
 	elif(key.code == 51 and down):#3, dropper
-		pneuCommand(3)
+		msgPneu.command = 3
 	elif(key.code == 52 and down):#4, dropper
-		pneuCommand(4)
+		msgPneu.command = 4
 	elif(key.code == 53 and down):#5, arm open
-		pneuCommand(5)
+		msgPneu.command = 5
 	elif(key.code == 54 and down):#6, arm close
-		pneuCommand(6)
+		msgPneu.command = 6
 
 '''
 Motor IDs:
@@ -76,12 +76,10 @@ Motor IDs:
 4 StrafeTop
 5 StrafeBottom
 '''
-def motorCommand(motor, power):
+def sendMotorCommand():
 	global pubMotor, msgMotor
 	msgMotor.header.seq += 1
 	msgMotor.header.stamp = rospy.get_rostime()
-	msgMotor.motor_id = motor
-	msgMotor.power = power	
 	pubMotor.publish(msgMotor)
 
 '''
@@ -94,12 +92,13 @@ Pneumatic IDs:
 5 Arm open 
 6 Arm close 
 '''
-def pneuCommand(pneu):
+def sendPneuCommand():
 	global pubPneu, msgPneu
-	msgPneu.header.seq += 1
-	msgPneu.header.stamp = rospy.get_rostime()
-	msgPneu.command = pneu
-	pubPneu.publish(msgPneu)
+	if pneu.command != -1:
+		msgPneu.header.seq += 1
+		msgPneu.header.stamp = rospy.get_rostime()
+		pubPneu.publish(msgPneu)
+		pneu.command = -1
 
 def keyDown(key):
 	userInput(key, True)
@@ -125,10 +124,11 @@ def main():
 	msgPneu.header.stamp = rospy.get_rostime()
 	msgPneu.header.frame_id = "0"
 
-	#rate = rospy.Rate(1)
-	#while not rospy.is_shutdown():
-	#	motorCommand(0, motorPower)
-	#	rate.sleep()
+	rate = rospy.Rate(4)
+	while not rospy.is_shutdown():
+		sendMotorCommand()
+		sendPneuCommand()
+		rate.sleep()
 
 	rospy.spin()
 

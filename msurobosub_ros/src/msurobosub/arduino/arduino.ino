@@ -55,14 +55,23 @@ Arduino_I2C_ESC motors[numMotors] = {
 
 //Array for direction motor runs
 int direction[numMotors] = {1, -1, 1, 1, 1, 1};
+float lastMotorCommand[numMotors] = {0, 0, 0, 0, 0, 0};
+int motorStatusFreq = 4;//How often we send motor updates in hertz
+int lastMotor = 0;//Which motor did we send an update for last?
+unsigned long motorUpdateTime = 0;//Time at which we should send next motor update
+
+int pneumaticShutoffPin = 0;//Pin to shut off
+unsigned long pneumaticShutoffTime = 0;//Time at which we should turn off pneumatic valve
 
 float maxThrust = .75;//Percent value indicating what power level we consider to be max thrust
 
 void motorCommandCallback(const msurobosub::MotorCommand& command){
-  if(command.power <= 1 && command.power >= -1)
-    motors[command.motor_id].set(percentToThrottle(command.power) * direction[command.motor_id]);
-  else
-    nh.logerror("Invalid motor command");
+  lastMotorCommand[0] = percentToThrottle(command.power[0]) * direction[0];
+  lastMotorCommand[1] = percentToThrottle(command.power[0]) * direction[1];
+  lastMotorCommand[2] = percentToThrottle(command.power[0]) * direction[2];
+  lastMotorCommand[3] = percentToThrottle(command.power[0]) * direction[3];
+  lastMotorCommand[4] = percentToThrottle(command.power[0]) * direction[4];
+  lastMotorCommand[5] = percentToThrottle(command.power[0]) * direction[5];
 }
 
 void pneumaticCommandCallback(const msurobosub::PneumaticCommand& command){
@@ -118,14 +127,14 @@ void pneumaticCommandCallback(const msurobosub::PneumaticCommand& command){
   }
 }
 
-void activatePneumatics(int pin, int duration){
-  digitalWrite(pin, LOW);
-  delay(duration);
-  digitalWrite(pin, HIGH);
-}
-
 ros::Subscriber<msurobosub::MotorCommand> subMotorCommand("command/motor", &motorCommandCallback);
 ros::Subscriber<msurobosub::PneumaticCommand> subPneumaticCommand("command/pneumatic", &pneumaticCommandCallback);
+
+void activatePneumatics(int pin, int duration){
+  digitalWrite(pin, LOW);
+  pneumaticShutoffTime = millis() + duration;
+  pneumaticShutoffPin = pin;
+}
 
 std_msgs::Header getHeader(){
   std_msgs::Header updated = std_msgs::Header();
@@ -143,24 +152,32 @@ std_msgs::Header getHeader(std_msgs::Header h){
   return updated;
 }
 
-//Run actual update function that updates values from motor controllers
+//Update motor readings/power setting
 void motorUpdate(){
   for(int i = 0; i < numMotors; i++){
     motors[i].update();
-    motorStatusMsg.header = getHeader(motorStatusMsg.header);
-    motorStatusMsg.motor_id = i;
-    motorStatusMsg.connected = motors[i].isAlive() ? 1 : 0;
-    motorStatusMsg.rpm = motors[i].rpm();
-    motorStatusMsg.voltage = motors[i].voltage();
-    motorStatusMsg.current = motors[i].current();
-    motorStatusMsg.temperature = motors[i].temperature();
-    //pubMotorStatus.publish(&motorStatusMsg); 
+    motors[i].set(lastMotorCommand[i]);
+
+    if(lastMotorUpdate == i && millis() > motorUpdateTime){
+      motorStatusMsg.header = getHeader(motorStatusMsg.header);
+      motorStatusMsg.motor_id = i;
+      motorStatusMsg.connected = motors[i].isAlive() ? 1 : 0;
+      motorStatusMsg.rpm = motors[i].rpm();
+      motorStatusMsg.voltage = motors[i].voltage();
+      motorStatusMsg.current = motors[i].current();
+      motorStatusMsg.temperature = motors[i].temperature();
+      pubMotorStatus.publish(&motorStatusMsg); 
+
+      lastMotorUpdate = lastMotorUpdate == 5 ? 0 : lastMotorUpdate++;
+      motorUpdateTime = millis() + (1/motorStatusFreq*1000)/numMotors;
+    }
   }
 }
 
 //This function converts a value between -1 and 1 to a throttle value
 //Actual throttle values are -32767 to 32767
 int16_t percentToThrottle(float t){
+  t = constrain(t, -1, 1);
   return (int16_t)(t * 32767) * maxThrust;
 }
 
@@ -173,7 +190,7 @@ void sensorUpdate(){
   hydroMsg.header = getHeader(hydroMsg.header);
   hydroMsg.distance = 0; 
   hydroMsg.degree = 0;
-  //pubHydro.publish(&hydroMsg);
+  pubHydro.publish(&hydroMsg);
 
   depthMsg.header = getHeader(depthMsg.header);
   //Convert depth sensor reading to PSI
@@ -184,7 +201,7 @@ void sensorUpdate(){
 
   //Convert difference between surface and current PSI to depth in meters.
   depthMsg.depth = ((analogRead(depthPin) * .0048828125 - 1)*12.5 - surfacePSI)*.13197839577;
-  //pubDepth.publish(&depthMsg);
+  pubDepth.publish(&depthMsg);
 }
 
 void setup() {
@@ -227,6 +244,12 @@ void setup() {
 void loop() {
   motorUpdate();
   sensorUpdate();
+
+  //check for pneumatics shutoff
+  if(pneumaticShutoffTime != 0 && millis() > pneumaticShutoffTime){
+    digitalWrite(pneumaticShutoffPin, HIGH);
+    pneumaticShutoffTime = 0;
+  }
+  
   nh.spinOnce();
-  delay(250);
 }
