@@ -94,11 +94,11 @@ Pneumatic IDs:
 '''
 def sendPneuCommand():
 	global pubPneu, msgPneu
-	if pneu.command != -1:
+	if msgPneu.command != -1:
 		msgPneu.header.seq += 1
 		msgPneu.header.stamp = rospy.get_rostime()
 		pubPneu.publish(msgPneu)
-		pneu.command = -1
+		msgPneu.command = -1
 
 def keyDown(key):
 	userInput(key, True)

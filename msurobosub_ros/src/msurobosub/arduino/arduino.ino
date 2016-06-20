@@ -67,11 +67,11 @@ float maxThrust = .75;//Percent value indicating what power level we consider to
 
 void motorCommandCallback(const msurobosub::MotorCommand& command){
   lastMotorCommand[0] = percentToThrottle(command.power[0]) * direction[0];
-  lastMotorCommand[1] = percentToThrottle(command.power[0]) * direction[1];
-  lastMotorCommand[2] = percentToThrottle(command.power[0]) * direction[2];
-  lastMotorCommand[3] = percentToThrottle(command.power[0]) * direction[3];
-  lastMotorCommand[4] = percentToThrottle(command.power[0]) * direction[4];
-  lastMotorCommand[5] = percentToThrottle(command.power[0]) * direction[5];
+  lastMotorCommand[1] = percentToThrottle(command.power[1]) * direction[1];
+  lastMotorCommand[2] = percentToThrottle(command.power[2]) * direction[2];
+  lastMotorCommand[3] = percentToThrottle(command.power[3]) * direction[3];
+  lastMotorCommand[4] = percentToThrottle(command.power[4]) * direction[4];
+  lastMotorCommand[5] = percentToThrottle(command.power[5]) * direction[5];
 }
 
 void pneumaticCommandCallback(const msurobosub::PneumaticCommand& command){
@@ -158,7 +158,7 @@ void motorUpdate(){
     motors[i].update();
     motors[i].set(lastMotorCommand[i]);
 
-    if(lastMotorUpdate == i && millis() > motorUpdateTime){
+    if(lastMotor == i && millis() > motorUpdateTime){
       motorStatusMsg.header = getHeader(motorStatusMsg.header);
       motorStatusMsg.motor_id = i;
       motorStatusMsg.connected = motors[i].isAlive() ? 1 : 0;
@@ -168,7 +168,7 @@ void motorUpdate(){
       motorStatusMsg.temperature = motors[i].temperature();
       pubMotorStatus.publish(&motorStatusMsg); 
 
-      lastMotorUpdate = lastMotorUpdate == 5 ? 0 : lastMotorUpdate++;
+      lastMotor = lastMotor == 5 ? 0 : lastMotor++;
       motorUpdateTime = millis() + (1/motorStatusFreq*1000)/numMotors;
     }
   }
@@ -250,6 +250,8 @@ void loop() {
     digitalWrite(pneumaticShutoffPin, HIGH);
     pneumaticShutoffTime = 0;
   }
+
+  //nh.loginfo("Test");
   
   nh.spinOnce();
 }
