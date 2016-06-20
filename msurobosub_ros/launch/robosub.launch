@@ -96,7 +96,9 @@ false, false, false]</rosparam>
 	</node>
 
 	<!-- Keyboard input -->
-	<node respawn="true" pkg="keyboard" type="keyboard" name="keyboard"></node> 
+	<node respawn="true" pkg="keyboard" type="keyboard" name="keyboard">
+		<param name="allow_repeat" value="false"/>	
+	</node> 
 
 	<node respawn="true" pkg="msurobosub" type="userInput.py" name="user_input">
 	</node>
@@ -167,5 +169,7 @@ false, false, false]</rosparam>
     </node>
 
 	<!--<node pkg="rqt" type="rqt" name="rqt"></node>-->
+	<param name="robot_description" textfile="$(find msurobosub)/robosub_model.urdf"/>
+	<node name="rqt" pkg="rqt" type="rqt"/>
 
 </launch>
