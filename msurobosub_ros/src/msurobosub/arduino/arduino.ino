@@ -168,7 +168,7 @@ void motorUpdate(){
       motorStatusMsg.temperature = motors[i].temperature();
       pubMotorStatus.publish(&motorStatusMsg); 
 
-      lastMotor = lastMotor == 5 ? 0 : lastMotor++;
+      lastMotor = lastMotor == 5 ? 0 : ++lastMotor;
       motorUpdateTime = millis() + (1/motorStatusFreq*1000)/numMotors;
     }
   }
