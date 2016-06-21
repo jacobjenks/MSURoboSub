@@ -12,9 +12,9 @@ msgMotor = None
 msgPneu = None
 
 commandTimeout = None
-commandTimeoutDelay = 100
+commandTimeoutDelay = 200
 
-motorPower = .35
+motorPower = .01#.35
 
 #Map motor activations to key presses
 #Key id maps to list of motor ids to activate (keys), and the direction with which to activate (values)
@@ -26,7 +26,8 @@ keyMapping = {119: {0: 1, 1: 1},#w, forward
 			  101: {0: 1, 1: -1},#e, rotate right
 			  99:  {2: -1, 3: -3},#c, descend
 			  32:  {2: 1, 3: 1},#space, ascend
-			  120: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0}#x, stop all motors 
+			  120: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0},#x, stop all motors 
+			  116: {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1}#t, test all motors
 			 }
 
 #@param Key key: The message for the key that was pressed
@@ -126,6 +127,15 @@ def main():
 	msgPneu.header.seq = 0
 	msgPneu.header.stamp = rospy.get_rostime()
 	msgPneu.header.frame_id = "0"
+
+	'''
+	msgMotor.power[0] = .01
+	msgMotor.power[1] = .01
+	msgMotor.power[2] = .01
+	msgMotor.power[3] = .01
+	msgMotor.power[4] = .01
+	msgMotor.power[5] = .01
+	'''
 
 	rate = rospy.Rate(8)
 	while not rospy.is_shutdown():

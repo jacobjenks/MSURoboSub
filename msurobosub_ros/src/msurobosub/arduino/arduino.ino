@@ -45,8 +45,8 @@ msurobosub::Hydro hydroMsg;
 ros::Publisher pubHydro("sensors/hydrophone", &hydroMsg);
 
 Arduino_I2C_ESC motors[numMotors] = {
-  Arduino_I2C_ESC(0x2F),//ForwardPort
-  Arduino_I2C_ESC(0x30),//ForwardStar
+  Arduino_I2C_ESC(0x30),//ForwardPort
+  Arduino_I2C_ESC(0x2F),//ForwardStar
   Arduino_I2C_ESC(0x35),//DepthFore
   Arduino_I2C_ESC(0x37),//DepthAft
   Arduino_I2C_ESC(0x38),//StrafeForward
