@@ -39,13 +39,14 @@ def imuTalker():
 
 	try: 
 		ser = serial.Serial(imuPort, imuBaud)
+		ser.flush()#make sure buffer is empty before we start looping
 	except serial.SerialException:
-		rospy.logfatal("Error connecting to IMU.")
-
-
-	ser.flush()#make sure buffer is empty before we start looping
+		rospy.logerr("Error connecting to IMU.")
 
 	while not rospy.is_shutdown():
+		if ser is None:
+			continue	
+
 		imuMsg.header.stamp = rospy.get_rostime() 
 		imuMsg.header.seq += 1
 
