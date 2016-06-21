@@ -49,12 +49,12 @@ Arduino_I2C_ESC motors[numMotors] = {
   Arduino_I2C_ESC(0x30),//ForwardStar
   Arduino_I2C_ESC(0x35),//DepthFore
   Arduino_I2C_ESC(0x37),//DepthAft
-  Arduino_I2C_ESC(0x36),//StrafeTop
-  Arduino_I2C_ESC(0x38)//StrafeBottom
+  Arduino_I2C_ESC(0x38),//StrafeForward
+  Arduino_I2C_ESC(0x36)//StrafeBack
 };
 
 //Array for direction motor runs
-int direction[numMotors] = {1, -1, 1, 1, 1, 1};
+int direction[numMotors] = {-1, 1, 1, 1, -1, 1};
 float lastMotorCommand[numMotors] = {0, 0, 0, 0, 0, 0};
 int motorStatusFreq = 4;//How often we send motor updates in hertz
 int lastMotor = 0;//Which motor did we send an update for last?
