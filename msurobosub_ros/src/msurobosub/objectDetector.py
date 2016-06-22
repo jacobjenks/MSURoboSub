@@ -5,7 +5,6 @@ from sensor_msgs.msgs import Image
 
 msgImagePercept = None
 pubImagePercept = None
-latestImage = None
 gpuReady = True
 
 def subImageCB(imageMsg):
@@ -26,8 +25,8 @@ def objectDetector():
 	rospy.Subscriber("sensors/camF/image_raw", Image, subCamCB)
 
 	msgImagePercept = ImagePercept()
-	msgMot.header.seq = 0
-	msgMot.header.frame_id = ""
+	msgImagePercept.header.seq = 0
+	msgImagePercept.header.frame_id = ""
 
 	rospy.spin()
 
