@@ -4,6 +4,6 @@
 [submodule "msurobosub_ros/src/viso2"]
 	path = msurobosub_ros/src/viso2
 	url = https://github.com/srv/viso2.git
-[submodule "py-faster-rcnn"]
-	path = py-faster-rcnn
-	url = https://github.com/rbgirshick/py-faster-rcnn.git
+[submodule "msurobosub_ros/src/ros_frcnn_object_detector"]
+	path = msurobosub_ros/src/ros_frcnn_object_detector
+	url = https://github.com/jacobjenks/ros_frcnn_object_detector
