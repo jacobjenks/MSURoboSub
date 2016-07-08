@@ -14,11 +14,14 @@ class TaskStatus(Enum):
 	complete = 3	#Task complete
 
 class Task:
-	priority = 0
-	subTasks = None	
-	targetObject
-	state = TaskStatus.waiting
-	controlPub = None
+	priority = 0 # Task priority, tasks are executed in order of priority
+	subTasks = None	# List of subtasks that must be completed before this task can start
+	targetObject = None  
+	state = TaskStatus.waiting # Tasks sit in waiting state until monitorStatus() decides they are available to run
+	pubControl = None # Tasks publish a desired Pose as a target for the controller
+	subPose = None # Every task subscribes to odom/filtered, so it knows the sub's state
+	currentPose = None
+	targetPose = None
 	name = "Task"
 
 	def __init__(self, priority = 0, name = "Task", subTasks = array()):
@@ -29,8 +32,13 @@ class Task:
 		else:
 			self.subTasks = subTasks
 		rospy.init_node('Task', anonymous=True)
-		self.controlPub = rospy.Publisher('controller/pose', Pose, queue_size=5)
+		self.pubControl = rospy.Publisher('controller/pose', Pose, queue_size=5)
+		self.subPose = rospy.Subscriber("odom/filtered", PoseWithCovariance, savePose)
+
 		rospy.spin()
+
+	def savePose(self, pose):
+		self.currentPose = pose
 
 	#Callback function for any subscribers the task uses to monitor its own status
 	def monitorStatus():
