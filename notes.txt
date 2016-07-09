@@ -27,13 +27,15 @@ To rebuild Arduino libraries:
 	rm -rf ros_lib
 	rosrun rosserial_arduino make_libraries.py .
 
+To pull submodules into a fresh clone:
+	git submodule init
+	git submodule update
+
 Dependencies that need to be installed separately:
-	#ArduinoJson
 	ros-indigo-keyboard
 	ros-indigo-rosserial
 	ros-indigo-rosserial-arduino
 	ros-indigo-robot-localization
 	ros-indigo-cv-camera
 	ros-indigo-hector-worldmodel
-	pyserial
 	Arduino_I2C_ESC (Bluerobotics)
