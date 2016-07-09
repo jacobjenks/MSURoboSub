@@ -23,6 +23,8 @@ def odomCommandCallback(msg):
 		
 	# Decide what motors to turn on, and send MotorCommand
 	
+	max_power = 1
+
 	x_comp = msgOdomCommand.pose.pose.position.x - msgOdom.pose.pose.position.x
 	y_comp = msgOdomCommand.pose.pose.position.y - msgOdom.pose.pose.position.y
 	z_comp = msgOdomCommand.pose.pose.position.z - msgOdom.pose.pose.position.z
@@ -33,48 +35,20 @@ def odomCommandCallback(msg):
 	y_unit = y_comp / unit_factor
 	z_unit = z_comp / unit_factor
 
-	if abs(z_unit) == 1:
-		if z_unit > 0:
-			#move forward
-			msgMot.power[0] = 1
-			msgMpt.power[1] = 1
-			for i in range(2, 6):
-				msgMot.power[i] = 0
-		else:
-			#turn 180 degrees
-			msgMot.power[4] = 1
-			msgMot.power[5] = -1
-			for i in range(0, 4):
-				msgMot.power[i] = 0
-	elif abs(x_unit) == 1:
-		for i in range(0, 4):
-			msgMot.power[i] = 0
-		if x_unit > 0:
-			#turn 90 degrees to the right
-			msgMot.power[4] = 1
-			msgMot.power[5] = -1
-		else:
-			#turn 90 degrees to the left
-			msgMot.power[4] = -1
-			msgMot.power[5] = 1
-	elif abs(y_unit) == 1:
-		#this probably shouldnt ever happen
-		#back up and try again
-		msgMot.power[0] = -1
-		msgMot.power[1] = -1
-		for i in range(2, 6):
-			msgMot.power[i] = 0
+	if x_unit > 0:
+		#turn 90 degrees to the right
+		msgMot.power[4] = max_power
+		msgMot.power[5] = -1 * max_power
+	if x_unit > 0:
+		msgMot.power[4] = x_unit
+		msgMot.power[5] = x_unit * -1
 	else:
-		if x_unit > 0:
-			msgMot.power[4] = x_unit
-			msgMot.power[5] = x_unit * -1
-		else:
-			msgMot.power[4] = -1 * x_unit
-			msgMot.power[5] = x_unit
-		msgMot.power[0] = z_unit
-		msgMot.power[1] = z_unit
-		msgMot.power[2] = y_unit
-		msgMot.power[3] = y_unit
+		msgMot.power[4] = -1 * x_unit
+		msgMot.power[5] = x_unit
+	msgMot.power[0] = z_unit
+	msgMot.power[1] = z_unit
+	msgMot.power[2] = y_unit
+	msgMot.power[3] = y_unit
 
 	msgMot.motor_id = 0
 	msgMot.power = 1
