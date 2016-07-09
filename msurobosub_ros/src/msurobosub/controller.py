@@ -40,15 +40,15 @@ def odomCommandCallback(msg):
 		msgMot.power[4] = max_power
 		msgMot.power[5] = -1 * max_power
 	if x_unit > 0:
-		msgMot.power[4] = x_unit
-		msgMot.power[5] = x_unit * -1
+		msgMot.power[4] = y_unit
+		msgMot.power[5] = y_unit * -1
 	else:
-		msgMot.power[4] = -1 * x_unit
-		msgMot.power[5] = x_unit
-	msgMot.power[0] = z_unit
-	msgMot.power[1] = z_unit
-	msgMot.power[2] = y_unit
-	msgMot.power[3] = y_unit
+		msgMot.power[4] = -1 * y_unit
+		msgMot.power[5] = y_unit
+	msgMot.power[0] = x_unit
+	msgMot.power[1] = x_unit
+	msgMot.power[2] = z_unit
+	msgMot.power[3] = z_unit
 
 	msgMot.motor_id = 0
 	msgMot.power = 1
