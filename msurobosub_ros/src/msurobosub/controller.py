@@ -16,14 +16,12 @@ def odomCallback(msg):
 	global msgOdom
 	msgOdom = msg
 
-
-def odomCommandCallback(msg):
-	global msgOdomCommand, msgMot, pubMot
-	msgOdomCommand = msgOdomCommand
+def odomCommandCallback(msgOdomCommand):
+	global msgOdomCommand, msgOdom, msgMot, pubMot
 		
 	# Decide what motors to turn on, and send MotorCommand
 	
-	max_power = 1
+	max_power = 0.6 
 	max_rotation = 0.2
 
 	x_comp = msgOdomCommand.pose.pose.position.x - msgOdom.pose.pose.position.x
@@ -58,12 +56,6 @@ def odomCommandCallback(msg):
 	msgMot.motor_id = 0
 	msgMot.power = 1
 	pubMot.publish(msgMot)
-
-#Make sure motor command is between -1 and 1
-def clampMotorCommand(msgMot):
-	if math.abs(msgMot.power) > 1:
-		msgMot.power = math.copysign(1, msgMot.power)
-	return msgMot
 
 def controller():
 	global pubMot, msgMot
