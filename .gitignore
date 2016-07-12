@@ -3,3 +3,4 @@ devel/
 build/
 install/
 logs/*
+*.stl

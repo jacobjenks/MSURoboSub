@@ -17,6 +17,10 @@ def odomCallback(msg):
 	msgOdom = msg
 
 def odomCommandCallback(msgOdomCommand):
+	global msg
+	msgOdomCommand = msg
+
+def sendMotorCommand():
 	global msgOdomCommand, msgOdom, msgMot, pubMot
 		
 	# Decide what motors to turn on, and send MotorCommand
@@ -63,13 +67,16 @@ def controller():
 	rospy.init_node('controller')
 
 	rospy.Subscriber("odometry/filtered", Odometry, odomCallback)
-	rospy.Subscriber("command/conOdom", Odometry, odomCommandCallback)
+	rospy.Subscriber("command/moveTo", Odometry, odomCommandCallback)
 
 	msgMot = MotorCommand()
 	msgMot.header.seq = 0
 	msgMot.header.frame_id = "base_frame"
 
-	rospy.spin()
+	rate = rospy.Rate(50)
+	while not rospy.is_shutdown():
+		sendMotorCommand()
+		rate.sleep()
 
 if __name__ == '__main__':
 	try:
