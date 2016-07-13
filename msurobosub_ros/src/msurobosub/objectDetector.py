@@ -79,9 +79,10 @@ def initObjects():
 	objects.append(Object(3, "channel", 2.4, 1.2, Color(255, 255, 0)))
 	objects.append(Object(4, "bin", 0.3, 0.6, Color(255, 255, 0)))
 	objects.append(Object(5, "bin_cover", 0.3, 0.6, Color(0, 0, 0)))
-	objects.append(Object(6, "torpedo_target", 1.2, 1.2, Color(255, 255, 0)))
-	objects.append(Object(7, "torpedo_hole", 0.3, 0.3, Color(0, 0, 0)))
-	objects.append(Object(8, "torpedo_cover", 0.25, 0.25, Color(0, 0, 0)))
+	objects.append(Object(6, "torpedo target", 1.2, 1.2, Color(255, 255, 0)))
+	objects.append(Object(7, "torpedo hole", 0.3, 0.3, Color(0, 0, 0)))
+	objects.append(Object(8, "torpedo cover", 0.25, 0.25, Color(0, 0, 0)))
+	objects.append(Object(9, "path marker", 1, 0.2, Color(0, 0, 0)))#Fix size
 
 def objectDetector():
 	global pubImagePercept, msgImagePercept
