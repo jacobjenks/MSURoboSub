@@ -1,17 +1,20 @@
 #!/usr/bin/env python
 import rospy
+import cv2
 from hector_object_tracker.msgs import ImagePercept
 from sensor_msgs.msgs import Image
 
 msgImagePercept = None
 pubImagePercept = None
-gpuReady = True
+
+imageSkip = 7 #Only use every nth image
+currentImage = 0
 
 #Pixel ratio for our webcam
 #This is the number of pixels for an object 1 meter wide at a distance of 1 meter
 pixelRatio = 1280
-
-objects = None
+objectDefs = None # Object definitions - color, size, etc
+lastCamImage = None
 
 class Color:
 	r = 0
@@ -36,43 +39,56 @@ class Object:
 		self.height = height
 		self.color = color
 
+	#Estimate the distance to an object using its angular diameter (in pixels),
+	# and a pixel ratio calibrated for our specific camera
+	def estimateDistance(self, yMin, yMax):
+		global pixelRatio
+		return pixelRatio/self.height/(yMax - yMin)
+
+
 def subImageCB(imageMsg):
-	global gpuReady
+	global imageSkip, currentImage
+
+	if currentImage % imageSkip == 0:
+		objects = fasterRCNN(imageMsg)
+		drawObjects(objects)
+		
+	currentImage += 1
 	
-	if !gpuReady:
-		return
 
-	gpuReady = False	
-	fasterRCNN(imageMsg)
-	gpuReady = True
-
+# Run faster rcnn, publish messages for object detections, and return array of object detections
 def fasterRCNN(imageMsg):
-	global pubImagePercept
+	global pubImagePercept, objectDefs
 	#Run the thing
 
-	msgImagePercept.header.seq += 1
-	msgImagePercept.header.stamp = rospy.get_rostime()
-	msgImagePercept.x = 0
-	msgImagePercept.y = 0
-	msgImagePercept.distance = 5
-	pubImagePercept.publish(msgImagePercept)
-
-
-#Estimate the distance to an object using its angular diameter (in pixels),
-# and a pixel ratio calibrated for our specific camera
-def estimateDistance(xMin, xMax, objectClass):
-	global objects, pixelRatio
+	#objects = RUN
 
 	for o in objects:
-		if o.id == objectClass:
-			return pixelRatio/o.width/(xMax - xMin)
-	
-	
-def initObjects():
+		msgImagePercept = ImagePercept()
+		msgImagePercept.header = imageMsg.header
+		msgImagePercept.camera_info = None #TODO
+		msgImagePercept.x = (o.xMin + o.xMax) / 2 #Center point of object
+		msgImagePercept.y = (o.yMin + o.yMax) / 2 
+		msgImagePercept.width = (o.xMax - o.xMin) / msgImagePercept.camera_info.width
+		msgImagePercept.height = (o.yMax - o.yMin) / msgImagePercept.camera_info.height
+		msgImagePercept.distance = objectDefs[o.id].estimateDistance(o.yMin, o.yMax)
+		pubImagePercept.publish(msgImagePercept)
+
+	return objects
+
+def drawObjects(image, objects):
+	global pubObjectDetector, objectDefs
+
+	image = image.clone()
+
+	for o in objects:
+		cv2.rectangle(image, (o.xMin, o.yMin), (o.xMax, o.yMax), (0, 255, 0))
+		cv2.putText(image, objectDefs[o.id].name + ":" + objectDefs[o.id].estimateDistance(o.yMin, o.yMax), FONT_HERSHEY_SIMPLEX, 1, (0,255,0)) 
+
+	pubObjectDetector.publish(image)
+
+def initObjects(): 
 	global objects
-	objects = list()
-	buoy, gate, bin, bin_cover, torpedo_target, torpedo_hole, torpedo_cover, object_pickup, object_dropoff, path_marker, pinger
-	objects.append(Object(1, "qual gate", 3.05, 1.52, Color(255, 69, 0)))
 	objects.append(Object(2, "red buoy", 0.2, 0.24, Color(255, 0, 0)))
 	objects.append(Object(2, "green buoy", 0.2, 0.24, Color(0, 255, 0)))
 	objects.append(Object(2, "yellow buoy", 0.2, 0.24, Color(255, 255, 0)))
@@ -85,14 +101,11 @@ def initObjects():
 	objects.append(Object(9, "path marker", 1, 0.2, Color(0, 0, 0)))#Fix size
 
 def objectDetector():
-	global pubImagePercept, msgImagePercept
+	global pubImagePercept
 	pubImagePercept = rospy.Publisher('worldmodel/image_percept', ImagePercept, queue_size=10)
-	rospy.init_node('objectDetector')
+	pubObjectDetector = rospy.Publisher('object_detector', Image, queue_size=10)
 	rospy.Subscriber("sensors/camF/image_raw", Image, subCamCB)
-
-	msgImagePercept = ImagePercept()
-	msgImagePercept.header.seq = 0
-	msgImagePercept.header.frame_id = "camF"
+	rospy.init_node('objectDetector')
 
 	initObjects()
 
