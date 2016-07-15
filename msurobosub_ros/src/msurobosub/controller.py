@@ -8,6 +8,7 @@ import math
 msgOdom = None
 msgOdomCommand = None
 msgMot = None
+msgOdomFront = None
 
 pubMot = None
 
@@ -16,6 +17,8 @@ def odomCallback(msg):
 	global msgOdom
 	msgOdom = msg
 
+def turnLeft():
+
 
 def odomCommandCallback(msg):
 	global msgOdomCommand, msgMot, pubMot
@@ -23,8 +26,8 @@ def odomCommandCallback(msg):
 		
 	# Decide what motors to turn on, and send MotorCommand
 	
-	max_power = 1
-	max_rotation = 0.2
+	max_power = 1.00
+	max_rotation = 0.10
 
 	x_comp = msgOdomCommand.pose.pose.position.x - msgOdom.pose.pose.position.x
 	y_comp = msgOdomCommand.pose.pose.position.y - msgOdom.pose.pose.position.y
@@ -36,18 +39,17 @@ def odomCommandCallback(msg):
 	z_unit = z_comp / unit_factor
 	y_unit = y_comp / unit_factor
 
-	if y_unit > 0:
-		msgMot.power[4] = max_rotation
-		msgMot.power[5] = max_rotation * -1
-	else:
-		msgMot.power[4] = -1 * max_rotation
-		msgMot.power[5] = max_rotation
-	if x_unit > max_power:
-		msgMot.power[0] = max_power
-		msgMot.power[1] = max_power	
-	else:
-		msgMot.power[0] = x_unit
-		msgMot.power[1] = x_unit
+
+	
+
+	#strafe thrusters
+	
+
+	#forward thrusters
+	msgMot.power[0] = 
+	msgMot.power[1] = 	
+
+	#depth thrusters
 	if z_unit > max_power:
 		msgMot.power[2] = max_power
 		msgMot.power[3] = max_power
