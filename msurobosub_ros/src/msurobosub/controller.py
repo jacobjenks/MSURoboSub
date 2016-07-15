@@ -17,17 +17,27 @@ def odomCallback(msg):
 	global msgOdom
 	msgOdom = msg
 
+<<<<<<< HEAD
 def turnLeft():
 
+=======
+def odomCommandCallback(msgOdomCommand):
+	global msg
+	msgOdomCommand = msg
+>>>>>>> c41e590c9c11a4464b7aef5a79284c4a9a3beb61
 
-def odomCommandCallback(msg):
-	global msgOdomCommand, msgMot, pubMot
-	msgOdomCommand = msgOdomCommand
+def sendMotorCommand():
+	global msgOdomCommand, msgOdom, msgMot, pubMot
 		
 	# Decide what motors to turn on, and send MotorCommand
 	
+<<<<<<< HEAD
 	max_power = 1.00
 	max_rotation = 0.10
+=======
+	max_power = 0.6 
+	max_rotation = 0.2
+>>>>>>> c41e590c9c11a4464b7aef5a79284c4a9a3beb61
 
 	x_comp = msgOdomCommand.pose.pose.position.x - msgOdom.pose.pose.position.x
 	y_comp = msgOdomCommand.pose.pose.position.y - msgOdom.pose.pose.position.y
@@ -61,25 +71,22 @@ def odomCommandCallback(msg):
 	msgMot.power = 1
 	pubMot.publish(msgMot)
 
-#Make sure motor command is between -1 and 1
-def clampMotorCommand(msgMot):
-	if math.abs(msgMot.power) > 1:
-		msgMot.power = math.copysign(1, msgMot.power)
-	return msgMot
-
 def controller():
 	global pubMot, msgMot
 	pubMot = rospy.Publisher('command/motor', MotorCommand, queue_size=10)
 	rospy.init_node('controller')
 
 	rospy.Subscriber("odometry/filtered", Odometry, odomCallback)
-	rospy.Subscriber("command/conOdom", Odometry, odomCommandCallback)
+	rospy.Subscriber("command/moveTo", Odometry, odomCommandCallback)
 
 	msgMot = MotorCommand()
 	msgMot.header.seq = 0
 	msgMot.header.frame_id = "base_frame"
 
-	rospy.spin()
+	rate = rospy.Rate(50)
+	while not rospy.is_shutdown():
+		sendMotorCommand()
+		rate.sleep()
 
 if __name__ == '__main__':
 	try:

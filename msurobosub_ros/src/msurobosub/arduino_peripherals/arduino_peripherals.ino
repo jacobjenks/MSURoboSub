@@ -11,8 +11,8 @@
 #include <std_msgs/Header.h>
 
 /*
- * This arduino relays pneumatic/motor commands from ROS to the hardware, and relays
- * depth/hydrophone/motor sensor data to ROS.
+ * This arduino relays pneumatic commands from ROS to the hardware, and relays
+ * depth/hydrophone sensor data to ROS.
  * 
  * A rosserial_python node (started in the launch file) listens to the serial channel, and
  * relays all of this information between the Arduino and ROS
@@ -37,42 +37,13 @@ bool pneumaticLock = true;
 float surfacePSI = -1;
 
 ros::NodeHandle nh;
-msurobosub::MotorStatus motorStatusMsg;
-ros::Publisher pubMotorStatus("sensors/motor_status", &motorStatusMsg);
 msurobosub::Depth depthMsg;
 ros::Publisher pubDepth("sensors/depth", &depthMsg);
 msurobosub::Hydro hydroMsg;
 ros::Publisher pubHydro("sensors/hydrophone", &hydroMsg);
 
-Arduino_I2C_ESC motors[numMotors] = {
-  Arduino_I2C_ESC(0x30),//ForwardPort
-  Arduino_I2C_ESC(0x2F),//ForwardStar
-  Arduino_I2C_ESC(0x35),//DepthFore
-  Arduino_I2C_ESC(0x37),//DepthAft
-  Arduino_I2C_ESC(0x38),//StrafeForward
-  Arduino_I2C_ESC(0x36)//StrafeBack
-};
-
-//Array for direction motor runs
-int direction[numMotors] = {-1, 1, 1, 1, -1, 1};
-float lastMotorCommand[numMotors] = {0, 0, 0, 0, 0, 0};
-int motorStatusFreq = 4;//How often we send motor updates in hertz
-int lastMotor = 0;//Which motor did we send an update for last?
-unsigned long motorUpdateTime = 0;//Time at which we should send next motor update
-
 int pneumaticShutoffPin = 0;//Pin to shut off
 unsigned long pneumaticShutoffTime = 0;//Time at which we should turn off pneumatic valve
-
-float maxThrust = .75;//Percent value indicating what power level we consider to be max thrust
-
-void motorCommandCallback(const msurobosub::MotorCommand& command){
-  lastMotorCommand[0] = percentToThrottle(command.power[0]) * direction[0];
-  lastMotorCommand[1] = percentToThrottle(command.power[1]) * direction[1];
-  lastMotorCommand[2] = percentToThrottle(command.power[2]) * direction[2];
-  lastMotorCommand[3] = percentToThrottle(command.power[3]) * direction[3];
-  lastMotorCommand[4] = percentToThrottle(command.power[4]) * direction[4];
-  lastMotorCommand[5] = percentToThrottle(command.power[5]) * direction[5];
-}
 
 void pneumaticCommandCallback(const msurobosub::PneumaticCommand& command){
   switch(command.command){
@@ -127,7 +98,6 @@ void pneumaticCommandCallback(const msurobosub::PneumaticCommand& command){
   }
 }
 
-ros::Subscriber<msurobosub::MotorCommand> subMotorCommand("command/motor", &motorCommandCallback);
 ros::Subscriber<msurobosub::PneumaticCommand> subPneumaticCommand("command/pneumatic", &pneumaticCommandCallback);
 
 void activatePneumatics(int pin, int duration){
@@ -150,35 +120,6 @@ std_msgs::Header getHeader(std_msgs::Header h){
   updated.stamp = nh.now();
   updated.frame_id = h.frame_id;
   return updated;
-}
-
-//Update motor readings/power setting
-void motorUpdate(){
-  for(int i = 0; i < numMotors; i++){
-    motors[i].update();
-    motors[i].set(lastMotorCommand[i]);
-
-    if(lastMotor == i && millis() > motorUpdateTime){
-      motorStatusMsg.header = getHeader(motorStatusMsg.header);
-      motorStatusMsg.motor_id = i;
-      motorStatusMsg.connected = motors[i].isAlive() ? 1 : 0;
-      motorStatusMsg.rpm = motors[i].rpm();
-      motorStatusMsg.voltage = motors[i].voltage();
-      motorStatusMsg.current = motors[i].current();
-      motorStatusMsg.temperature = motors[i].temperature();
-      pubMotorStatus.publish(&motorStatusMsg); 
-
-      lastMotor = lastMotor == 5 ? 0 : ++lastMotor;
-      motorUpdateTime = millis() + (1/motorStatusFreq*1000)/numMotors;
-    }
-  }
-}
-
-//This function converts a value between -1 and 1 to a throttle value
-//Actual throttle values are -32767 to 32767
-int16_t percentToThrottle(float t){
-  t = constrain(t, -1, 1);
-  return (int16_t)(t * 32767) * maxThrust;
 }
 
 void sensorUpdate(){
@@ -207,10 +148,8 @@ void sensorUpdate(){
 void setup() {
   Wire.begin();
   nh.initNode();
-  nh.advertise(pubMotorStatus);
   nh.advertise(pubHydro);
   nh.advertise(pubDepth);
-  nh.subscribe(subMotorCommand);
   nh.subscribe(subPneumaticCommand);
 
   //Initialize pneumatics
@@ -228,8 +167,6 @@ void setup() {
   digitalWrite(drop2Pin, HIGH);
 
   //Initialize messages
-  motorStatusMsg.header = getHeader();
-  motorStatusMsg.header.frame_id = "0";
   hydroMsg.header = getHeader();
   hydroMsg.header.frame_id = "hydro";
   depthMsg.header = getHeader();
@@ -242,7 +179,6 @@ void setup() {
 }
 
 void loop() {
-  motorUpdate();
   sensorUpdate();
 
   //check for pneumatics shutoff
@@ -251,7 +187,5 @@ void loop() {
     pneumaticShutoffTime = 0;
   }
 
-  //nh.loginfo("Test");
-  
   nh.spinOnce();
 }

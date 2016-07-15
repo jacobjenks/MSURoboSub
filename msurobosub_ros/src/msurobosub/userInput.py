@@ -5,11 +5,15 @@ import math
 from keyboard.msg import Key
 from msurobosub.msg import MotorCommand
 from msurobosub.msg import PneumaticCommand
+from std_msgs.msg import Bool
 
-comPneu = None
-comMotor = None
 msgMotor = None
 msgPneu = None
+msgMission = None
+
+pubMotor = None
+pubPneu = None
+pubMission = None
 
 commandTimeout = None
 commandTimeoutDelay = 200
@@ -33,7 +37,7 @@ keyMapping = {119: {0: 1, 1: 1},#w, forward
 #@param Key key: The message for the key that was pressed
 #@param bool down: Whether the keypress was up or down
 def userInput(key, down):
-	global msgMotor, msgPneu, comPneu, comMotor, motorPower, keyMapping, commandTimeout, commandTimeoutDelay
+	global msgMotor, msgPneu, motorPower, keyMapping, commandTimeout, commandTimeoutDelay
 	
 	key = int(key.code)
 
@@ -58,6 +62,10 @@ def userInput(key, down):
 		msgPneu.command = 5
 	elif(key == 54 and down):#6, arm close
 		msgPneu.command = 6
+	#other
+	elif(key == 112 and down):#p, toggle mission pause
+		msgMission.data = not msgMission.data
+	
 
 #Convert keypress to motor power setting, with optional power setting
 def setMotorPower(key, power = None):
@@ -101,6 +109,10 @@ def sendPneuCommand():
 		pubPneu.publish(msgPneu)
 		msgPneu.command = -1
 
+def sendMissionCommand():
+	global pubMission, msgMission
+	pubMission.publish(msgMission)
+
 def keyDown(key):
 	userInput(key, True)
 
@@ -108,7 +120,7 @@ def keyUp(key):
 	userInput(key, False)
 
 def main():
-	global pubMotor, pubPneu, msgMotor, msgPneu, motorPower, commandTimeout
+	global pubMotor, pubPneu, pubMission, msgMotor, msgPneu, msgMission, motorPower, commandTimeout
 
 	commandTimeout = dict()
 
@@ -117,6 +129,7 @@ def main():
 	rospy.Subscriber("keyboard/keyup", Key, keyUp)
 	pubMotor = rospy.Publisher("command/motor", MotorCommand, queue_size=30)
 	pubPneu = rospy.Publisher("command/pneumatic", PneumaticCommand, queue_size=30)
+	pubMission = rospy.Publisher("command/missionToggle", Bool, queue_size=5)
 
 	msgMotor = MotorCommand()
 	msgMotor.header.seq = 0
@@ -128,14 +141,8 @@ def main():
 	msgPneu.header.stamp = rospy.get_rostime()
 	msgPneu.header.frame_id = "0"
 
-	'''
-	msgMotor.power[0] = .01
-	msgMotor.power[1] = .01
-	msgMotor.power[2] = .01
-	msgMotor.power[3] = .01
-	msgMotor.power[4] = .01
-	msgMotor.power[5] = .01
-	'''
+	msgMission = Bool()
+	msgMission.data = False
 
 	rate = rospy.Rate(8)
 	while not rospy.is_shutdown():
@@ -148,6 +155,7 @@ def main():
 			
 		sendMotorCommand()
 		sendPneuCommand()
+		sendMissionCommand()
 		rate.sleep()
 
 	rospy.spin()

@@ -5,7 +5,7 @@ from msurobosub.msg import Depth
 from geometry_msgs.msg import Pose, PoseWithCovariance, Point
 from sensor_msgs.msg import Imu
 from nav_msgs.msg import Odometry
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 
 #Enum
 class TaskStatus:
@@ -22,6 +22,7 @@ class Task:
 	pubStatus = None # Channel for publishing task state/debug info
 	name = "Task"
 	runAlways = False # Some tasks should always run, regardless of status
+	runMission = False # Whether or not to run at all - allows us to pause mission
 
 	def __init__(self, priority = 0, name = "Task", subTasks = None):
 		self.priority = priority
@@ -40,11 +41,16 @@ class Task:
 
 		if self.priority == 0:
 			rate = rospy.Rate(10)
+			rospy.Subscriber("command/missionToggle", Bool, self.runMissionCallback)
 			while not rospy.is_shutdown():
-				self.run()
+				if self.runMission:
+					self.run()
 				rate.sleep()
 		else:
 			rospy.spin()
+
+	def runMissionCallback(self, msg):
+		self.runMission = msg.data
 
 	#Callback function for any subscribers the task uses to monitor its own status
 	def monitorStatus():

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <robot name="robosub">
-	<link name="base_link">
+	<!---<link name="base_link">
 		<visual>
 			<origin xyz="0 0 0" rpy="1.5708 0 0"/>
 			<geometry>
@@ -11,7 +11,7 @@
 				<color rgba=".8 .8 .8 .4"/>
 			</material>
 		</visual>
-	</link>
+	</link>-->
 
 	<link name="arm">
 		<visual>
@@ -110,5 +110,13 @@
 		<parent link="base_link"/>
 		<child link="imu0"/>
 	</joint>
+
+	<link name="base_link">
+		<visual>
+			<geometry>
+				<mesh filename="package://msurobosub/misc/robosub.stl"/>
+			</geometry>
+		</visual>
+	</link>
 
 </robot>
