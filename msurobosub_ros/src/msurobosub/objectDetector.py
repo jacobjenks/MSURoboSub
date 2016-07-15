@@ -16,6 +16,8 @@ pixelRatio = 1280
 objectDefs = None # Object definitions - color, size, etc
 lastCamImage = None
 
+CvBridge = CvBridge()
+
 class Color:
 	r = 0
 	g = 0
@@ -47,11 +49,11 @@ class Object:
 
 
 def subImageCB(imageMsg):
-	global imageSkip, currentImage
+	global imageSkip, currentImage, CvBridge
 
 	if currentImage % imageSkip == 0:
-		objects = fasterRCNN(imageMsg)
-		drawObjects(objects)
+		objects = fasterRCNN(imageMsg)	
+		drawObjects(CvBridge.imgmsg_to_cv2(imageMsg), objects)
 		
 	currentImage += 1
 	
@@ -77,7 +79,7 @@ def fasterRCNN(imageMsg):
 	return objects
 
 def drawObjects(image, objects):
-	global pubObjectDetector, objectDefs
+	global pubObjectDetector, objectDefs, CvBridge
 
 	image = image.clone()
 
@@ -85,7 +87,7 @@ def drawObjects(image, objects):
 		cv2.rectangle(image, (o.xMin, o.yMin), (o.xMax, o.yMax), (0, 255, 0))
 		cv2.putText(image, objectDefs[o.id].name + ":" + objectDefs[o.id].estimateDistance(o.yMin, o.yMax), FONT_HERSHEY_SIMPLEX, 1, (0,255,0)) 
 
-	pubObjectDetector.publish(image)
+	pubObjectDetector.publish(CvBridge.bridge.cv2_to_imgmsg(image))
 
 def initObjects(): 
 	global objects
