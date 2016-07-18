@@ -18,7 +18,10 @@ def odomCallback(msg):
 	msgOdom = msg
 
 def turnLeft(front, center, target): #Remember the ROS standard orientation
-	m = front.x / front.y
+	if front.y == 0:	
+		m = 1000000000
+	else:
+		m = front.x / front.y
 	b = center.x
 
 	if target.x > m*target.y + b:
