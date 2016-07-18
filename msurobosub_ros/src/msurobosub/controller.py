@@ -22,9 +22,15 @@ def turnLeft(front, center, target): #Remember the ROS standard orientation
 	b = center.x
 
 	if target.x > m*target.y + b:
-		return false
+		if front.y < 0:
+			return false
+		else:
+			return true
 	else:
-		return true
+		if front.y < 0:
+			return true
+		else:
+			return false
 
 def odomCommandCallback(msgOdomCommand):
 	global msg
