@@ -2,8 +2,9 @@
 import rospy
 from nav_msgs.msg import Odometry 
 from msurobosub.msg import MotorCommand
-
 import math
+import tf2_ros
+import geometry_msgs.msg
 
 msgOdom = None
 msgOdomCommand = None
@@ -49,7 +50,12 @@ def sendMotorCommand():
 	
 	center = msgOdom.pose.pose.position
 	target = msgOdomCommand.pose.pose.position
-	front = ___________.pose.pose.position	#I forget how to do this part
+	try:
+		trans = tfBuffer.lookip_transform('base_link', 'sub_front', rospy.Time())
+	except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+		rate.sleep()
+		continue
+	front = trans.transform.translation
 	
 	x_comp = target.x - center.x
 	y_comp = target.y - center.y
