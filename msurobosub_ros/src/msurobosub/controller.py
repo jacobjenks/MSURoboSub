@@ -17,47 +17,58 @@ def odomCallback(msg):
 	global msgOdom
 	msgOdom = msg
 
-<<<<<<< HEAD
-def turnLeft():
+def turnLeft(front, center, target): #Remember the ROS standard orientation
+	m = front.x / front.y
+	b = center.x
 
-=======
+	if target.x > m*target.y + b:
+		return false
+	else:
+		return true
+
 def odomCommandCallback(msgOdomCommand):
 	global msg
 	msgOdomCommand = msg
->>>>>>> c41e590c9c11a4464b7aef5a79284c4a9a3beb61
 
 def sendMotorCommand():
 	global msgOdomCommand, msgOdom, msgMot, pubMot
 		
 	# Decide what motors to turn on, and send MotorCommand
 	
-<<<<<<< HEAD
 	max_power = 1.00
 	max_rotation = 0.10
-=======
-	max_power = 0.6 
-	max_rotation = 0.2
->>>>>>> c41e590c9c11a4464b7aef5a79284c4a9a3beb61
-
-	x_comp = msgOdomCommand.pose.pose.position.x - msgOdom.pose.pose.position.x
-	y_comp = msgOdomCommand.pose.pose.position.y - msgOdom.pose.pose.position.y
-	z_comp = msgOdomCommand.pose.pose.position.z - msgOdom.pose.pose.position.z
-
+	
+	center = msgOdom.pose.pose.position
+	target = msgOdomCommand.pose.pose.position
+	front = ___________.pose.pose.position	#I forget how to do this part
+	
+	x_comp = target.x - center.x
+	y_comp = target.y - center.y
+	z_comp = target.z - center.z
+	
 	unit_factor = math.sqrt(abs(x_comp**2) + abs(y_comp**2) + abs(z_comp**2))
 
 	x_unit = x_comp / unit_factor
 	z_unit = z_comp / unit_factor
 	y_unit = y_comp / unit_factor
 
+	unit_orientation_factor = math.sqrt(abs((front.x - center.x)**2) + abs((front.y - center.y)**2))
 
-	
+	x_orient = (front.x - center.x) / unit_orientation_factor
+	y_orient = (front.y - center.y) / unit_orientation_factor
 
 	#strafe thrusters
+	if turnLeft(front, center, target):
+		msgMot.power[4] = y_unit - max_rotation
+		msgMot.power[5] = y_unit + max_rotation
+	else:
+		msgMot.power[4] = y_unit + max_rotation
+		msgMot.power[5] = y_unit - max_rotation
 	
-
 	#forward thrusters
-	msgMot.power[0] = 
-	msgMot.power[1] = 	
+	if math.pi/4 >= math.acos((x_unit * x_orient) + (y_unit * y_orient)):
+		msgMot.power[0] = x_unit
+		msgMot.power[1] = x_unit
 
 	#depth thrusters
 	if z_unit > max_power:
