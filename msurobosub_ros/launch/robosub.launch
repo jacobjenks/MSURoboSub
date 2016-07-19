@@ -15,6 +15,8 @@
 
 	<!-- Mission -->
 	<node respawn="true" pkg="msurobosub" type="task.py" name="mission"/>
+	<node respawn="true" pkg="msurobosub" type="controller.py" name="controller"/>
+	
 
 	<!-- Arduino relays  -->
 	<node respawn="true" pkg="rosserial_python" type="serial_node.py" name="arduino_motors">

@@ -22,7 +22,7 @@ class Task:
 	pubStatus = None # Channel for publishing task state/debug info
 	name = "Task"
 	runAlways = False # Some tasks should always run, regardless of status
-	runMission = False # Whether or not to run at all - allows us to pause mission
+	runMission = True# Whether or not to run at all - allows us to pause mission
 
 	def __init__(self, priority = 0, name = "Task", subTasks = None):
 		self.priority = priority
@@ -35,7 +35,7 @@ class Task:
 			self.subTasks = subTasks
 
 		rospy.init_node('Task', anonymous=True)
-		self.pubControl = rospy.Publisher('controller/pose', Pose, queue_size=5)
+		self.pubControl = rospy.Publisher('controller/pose', Odometry, queue_size=5)
 		self.pubStatus = rospy.Publisher('mission/status', String, queue_size=5)
 
 
@@ -46,8 +46,6 @@ class Task:
 				if self.runMission:
 					self.run()
 				rate.sleep()
-		else:
-			rospy.spin()
 
 	def runMissionCallback(self, msg):
 		self.runMission = msg.data
@@ -101,6 +99,26 @@ def MaintainDepthTask(Task):
 		if currentDepth < depthThreshold:
 			self.targetPose.position.z -= 1# Set target pose 1 meter down
 
+
+class MoveToTarget:
+
+	def __init__(self):
+		self.pose = Odometry()
+		#self.targetSub = rospy.Subscriber("worldmodel/object/pose", , self.monitorStatus)
+
+	def getTarget(self):
+		return self.pose
+
+	def isFound():
+		return True
+
+
+class MoveToTargetLocation(MoveToTarget):
+	
+	def __init__(self, odom):
+		self.pose = odom
+		
+
 class MoveToTask(Task):
 	currentOdom = None		#base_link Odometry 
 	targetOdom = None		#nav_msgs/Odometry we want to move to
@@ -122,15 +140,19 @@ class MoveToTask(Task):
 	odomSub = None
 	targetSub = None
 	
-	def __init__(self, priority, name, subTasks, bumpThresh = 0, steadyThresh = 0, movingFrame = "base_link"):
+	def __init__(self, priority, name, subTasks, target, bumpThresh = 0, steadyThresh = 0, movingFrame = "base_link"):
+		"""
+		@param target: MoveToTarget
+		"""
 		Task.__init__(self, priority, name, subTasks)
 		self.imuSub = rospy.Subscriber("sensors/imu", Imu, self.monitorStatus)
 		self.odomSub = rospy.Subscriber("odometry/filtered", Odometry, self.monitorStatus)
-		self.targetSub = rospy.Subscriber("worldmodel/object/pose", PoseWithCovariance, self.monitorStatus)
 
+		self.target = target
 		self.bumpThresh = bumpThresh
 		self.steadyThresh = steadyThresh
 		self.movingFrame = movingFrame
+		self.status = TaskStatus.ready
 
 		if bumpThresh == 0:
 			bumpStatus = True
@@ -157,15 +179,19 @@ class MoveToTask(Task):
 		elif type(msg).__name__ == "Odometry":
 			self.currentOdom = msg
 			point = Point()
+			targetOdom = self.target.getTarget()
 			point.x = targetOdom.pose.pose.x - currentOdom.pose.pose.x
 			point.y = targetOdom.pose.pose.y - currentOdom.pose.pose.y
 			point.z = targetOdom.pose.pose.z - currentOdom.pose.pose.z
 			self.targetDistance = getMagnitude(point)
 
+			self.pubStatus.publish("MoveTo target distance: " + self.targetDistance)
+
 			#TODO: Check orientation as well as distance
 			if self.targetDistance < self.proximityThresh:
 				self.distanceStatus = True
 				self.pubStatus.publish(self.name + ": arrived at target")
+		"""
 		elif type(msg).__name__ == "Object":
 			if msg.header.frame_id == targetFrame:
 				if self.targetFound == False:
@@ -173,6 +199,7 @@ class MoveToTask(Task):
 					self.status = TaskStatus.ready
 					self.pubStatus.publish(self.name + ": target found")
 				targetOdom = msg
+		"""
 
 		if self.distanceStatus and self.steadyStatus and self.bumpStatus:
 			self.status = TaskStatus.complete
@@ -181,8 +208,9 @@ class MoveToTask(Task):
 			
 	def runSelf(self):
 		if self.status == TaskStatus.ready:
-			self.targetOdom.header.frame_id = self.movingFrame
-			self.pubControl.publish(self.targetOdom)
+			targetOdom = self.target.getTarget()
+			targetOdom.header.frame_id = self.movingFrame
+			self.pubControl.publish(targetOdom)
 
 
 class PneumaticTask(Task):
@@ -217,7 +245,7 @@ class TestTask(Task):
 class TestMaintainDepthMission(Task):
 
 	def __init__(self):
-		subTasks = array()
+		subTasks = []
 		subTasks.append(MaintainDepthTask())
 
 		Task.__init__(self, 0, "Test Depth Mission", subTasks)
@@ -226,12 +254,36 @@ class TestMaintainDepthMission(Task):
 class TestBuoyMission(Task):
 
 	def __init__(self):
-		subTasks = array()
+		subTasks = []
 		subTasks.append(MaintainDepthTask())
 
-		subTasks.append(MoveToTask(2, "Red Buoy", array(), 1, 1, .5, "buoy_red"))
+		subTasks.append(MoveToTask(2, "Red Buoy", [], 1, 1, .5, "buoy_red"))
 
-		Task.__init__(self, "Test Buoy Mission", 0, subTasks)
+		Task.__init__(self, 0, "Test Buoy Mission", subTasks)
+
+
+class TestControllerMission(Task):
+
+	def __init__(self):
+		subTasks = [] 
+		msg = Odometry()
+		msg.pose.pose.position.x = 10
+		subTasks.append(MoveToTask(2, "Point 1", [], MoveToTargetLocation(msg)))
+		
+		msg = Odometry()
+		msg.pose.pose.position.x = 0 
+		subTasks.append(MoveToTask(2, "Point 2", [], MoveToTargetLocation(msg)))
+
+		msg = Odometry()
+		msg.pose.pose.position.x = 10
+		subTasks.append(MoveToTask(2, "Point 3", [], MoveToTargetLocation(msg)))
+
+		msg = Odometry()
+		msg.pose.pose.position.x = 0
+		subTasks.append(MoveToTask(2, "Point 4", [], MoveToTargetLocation(msg)))
+
+		Task.__init__(self, 0, "Test Controller Mission", subTasks)
+
 
 #TODO: Create competition mission, and specific testing missions
 
@@ -244,6 +296,6 @@ class CompetitionMission(Task):
 
 if __name__ == '__main__':
 	try:
-		test = TestTask()	
+		test = TestControllerMission()	
 	except rospy.ROSInterruptException:
 		pass

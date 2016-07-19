@@ -42,6 +42,9 @@ def odomCommandCallback(msgOdomCommand):
 
 def sendMotorCommand():
 	global msgOdomCommand, msgOdom, msgMot, pubMot
+
+	if msgOdom == None:
+		return
 		
 	# Decide what motors to turn on, and send MotorCommand
 	
@@ -51,10 +54,10 @@ def sendMotorCommand():
 	center = msgOdom.pose.pose.position
 	target = msgOdomCommand.pose.pose.position
 	try:
-		trans = tfBuffer.lookip_transform('base_link', 'sub_front', rospy.Time())
+		trans = tfBuffer.lookup_transform('base_link', 'sub_front', rospy.Time())
 	except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-		rate.sleep()
-		continue
+		return
+
 	front = trans.transform.translation
 	
 	x_comp = target.x - center.x
@@ -116,6 +119,6 @@ def controller():
 
 if __name__ == '__main__':
 	try:
-		conroller()
+		controller()
 	except rospy.ROSInterruptException:
 		pass
