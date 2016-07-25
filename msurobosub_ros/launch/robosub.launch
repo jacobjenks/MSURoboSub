@@ -14,18 +14,19 @@
 	<!-- Nodes -->
 
 	<!-- Mission -->
-	<node respawn="true" pkg="msurobosub" type="task.py" name="mission"/>
-	<node respawn="true" pkg="msurobosub" type="controller.py" name="controller"/>
-	
+	<!--<node respawn="true" pkg="msurobosub" type="task.py" name="mission"/>
+	<node respawn="true" pkg="msurobosub" type="controller.py" name="controller"/>-->
+
+	<node respawn="true" pkg="frcnn_object_detector" type="object_detector.py" name="object_detector"/>
 
 	<!-- Arduino relays  -->
 	<node respawn="true" pkg="rosserial_python" type="serial_node.py" name="arduino_motors">
 		<param name="port" value="/dev/ttyACM0"/>
 	</node>
 	
-	<node respawn="true" pkg="rosserial_python" type="serial_node.py" name="arduino_peripherals">
+	<!--<node respawn="true" pkg="rosserial_python" type="serial_node.py" name="arduino_peripherals">
 		<param name="port" value="/dev/ttyACM1"/>
-	</node>
+	</node>-->
 
 	<!-- Sensor data -->
 	<node respawn="true" pkg="msurobosub" type="imu.py" name="imu"></node>

@@ -18,7 +18,7 @@ pubMission = None
 commandTimeout = None
 commandTimeoutDelay = 200
 
-motorPower = .01#.35
+motorPower = 1
 
 #Map motor activations to key presses
 #Key id maps to list of motor ids to activate (keys), and the direction with which to activate (values)
@@ -28,7 +28,7 @@ keyMapping = {119: {0: 1, 1: 1},#w, forward
 			  100: {4: 1, 5: 1},#d, strafe right
 			  113: {0: -1, 1: 1},#q, rotate left
 			  101: {0: 1, 1: -1},#e, rotate right
-			  99:  {2: -1, 3: -3},#c, descend
+			  99:  {2: -1, 3: -1},#c, descend
 			  32:  {2: 1, 3: 1},#space, ascend
 			  120: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0},#x, stop all motors 
 			  116: {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1}#t, test all motors
