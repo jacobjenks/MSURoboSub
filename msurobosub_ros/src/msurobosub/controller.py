@@ -6,13 +6,13 @@ import math
 import tf2_ros
 import geometry_msgs.msg
 
+
 msgOdom = None
 msgOdomCommand = None
 msgMot = None
 msgOdomFront = None
 
 pubMot = None
-
 
 def odomCallback(msg):
 	global msgOdom
@@ -53,13 +53,22 @@ def sendMotorCommand():
 	
 	center = msgOdom.pose.pose.position
 	target = msgOdomCommand.pose.pose.position
+	
+	tfBuffer = tf2_ros.Buffer()
+	sub_comp_name = rospy.get_param('odom', 'odom_frame')
 	try:
-		trans = tfBuffer.lookup_transform('base_link', 'sub_front', rospy.Time())
-	except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+		trans = tfBuffer.lookup_transform(sub_comp_name, 'sub_front_broadcaster', rospy.Time())
+	except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+		print e
 		return
 
 	front = trans.transform.translation
-	
+		
+	#testing
+	print center.x + ' ' + center.y + ' ' + center.z
+	print target.x + ' ' + target.y + ' ' + target.z
+	#testing	
+
 	x_comp = target.x - center.x
 	y_comp = target.y - center.y
 	z_comp = target.z - center.z
@@ -117,8 +126,22 @@ def controller():
 		sendMotorCommand()
 		rate.sleep()
 
+def testController():
+	global msgOdom, msgOdomCommand
+
+	msgOdomCommand = Odometry()
+	msgOdomCommand.pose.pose.position.x = 10
+	msgOdomCommand.pose.pose.position.y = 0
+	msgOdomCommand.pose.pose.position.z = 0
+
+	msgOdom = Odometry()
+	msgOdom.pose.pose.position.x = 0
+	msgOdom.pose.pose.position.y = 0
+	msgOdom.pose.pose.position.z = 0
+
 if __name__ == '__main__':
 	try:
+		testController()
 		controller()
 	except rospy.ROSInterruptException:
 		pass
