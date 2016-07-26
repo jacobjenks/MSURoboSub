@@ -106,11 +106,7 @@ def sendMotorCommand():
 		msgMot.power[2] = z_unit
 		msgMot.power[3] = z_unit
 	
-	print "x: " + str(x_unit)
-	print "y: " + str(y_unit)
-	print "z: " + str(z_unit)
-	#if x_unit != 0 or y_unit != 0 or z_unit != 0: 
-	#pubMot.publish(msgMot)
+	pubMot.publish(msgMot)
 
 def controller():
 	global pubMot, msgMot
