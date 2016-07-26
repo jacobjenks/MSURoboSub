@@ -17,7 +17,7 @@
 	<!--<node respawn="true" pkg="msurobosub" type="task.py" name="mission"/>
 	<node respawn="true" pkg="msurobosub" type="controller.py" name="controller"/>-->
 
-	<node respawn="true" pkg="frcnn_object_detector" type="object_detector.py" name="object_detector"/>
+	<!--<node respawn="true" pkg="frcnn_object_detector" type="object_detector.py" name="object_detector"/>-->
 
 	<!-- Arduino relays  -->
 	<node respawn="true" pkg="rosserial_python" type="serial_node.py" name="arduino_motors">
@@ -181,5 +181,9 @@ false, false, false]</rosparam>
 	<!--<node pkg="rqt" type="rqt" name="rqt"></node>-->
 	<param name="robot_description" textfile="$(find msurobosub)/robosub_model.urdf"/>
 	<!--<node name="rqt" pkg="rqt" type="rqt"/>-->
+
+	<node pkg="rosbag" type="record" name="rosbag_record_cam"
+		args="record -o /home/robosub/MSURoboSub/logs/robosub /sensors/camF/image_raw /sensors/stereo_bot/left/image_raw"
+	/>
 
 </launch>
