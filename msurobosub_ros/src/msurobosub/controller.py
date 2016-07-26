@@ -57,13 +57,13 @@ def sendMotorCommand():
 	listener = tf2_ros.TransformListener(tfBuffer)
 
 	rate = rospy.Rate(10.0)
-	#while not rospy.is_shutdown():
-	try:
-		trans = tfBuffer.lookup_transform('base_link', 'sub_front',  rospy.Time())
-	except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
-        	rate.sleep()
-	        print e
-               	return
+	while not rospy.is_shutdown():
+		try:
+			trans = tfBuffer.lookup_transform('base_link', 'sub_front',  rospy.Time())
+			break
+		except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+        		rate.sleep()
+			return
 	
 	front = trans.transform.translation
 
@@ -105,8 +105,12 @@ def sendMotorCommand():
 	else:
 		msgMot.power[2] = z_unit
 		msgMot.power[3] = z_unit
-
-	pubMot.publish(msgMot)
+	
+	print "x: " + str(x_unit)
+	print "y: " + str(y_unit)
+	print "z: " + str(z_unit)
+	#if x_unit != 0 or y_unit != 0 or z_unit != 0: 
+	#pubMot.publish(msgMot)
 
 def controller():
 	global pubMot, msgMot
@@ -132,7 +136,7 @@ def testController():
 	msgOdomCommand.pose.pose.position.x = -2
 	msgOdomCommand.pose.pose.position.y = 2
 	msgOdomCommand.pose.pose.position.z = 2
-
+	
 	msgOdom = Odometry()
 	msgOdom.pose.pose.position.x = 0
 	msgOdom.pose.pose.position.y = 0

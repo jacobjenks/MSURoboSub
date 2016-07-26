@@ -89,7 +89,8 @@ def sendMotorCommand():
 	global pubMotor, msgMotor
 	msgMotor.header.seq += 1
 	msgMotor.header.stamp = rospy.get_rostime()
-	pubMotor.publish(msgMotor)
+	if all(msg_mot is 0 for msg_mot in msgMotor):
+		pubMotor.publish(msgMotor)
 
 '''
 Pneumatic IDs:
