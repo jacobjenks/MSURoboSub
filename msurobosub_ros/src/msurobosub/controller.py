@@ -13,6 +13,8 @@ msgOdomFront = None
 
 pubMot = None
 
+max_power = 1.00
+max_rotation = 0.10
 
 def odomCallback(msg):
 	global msgOdom
@@ -41,16 +43,13 @@ def odomCommandCallback(msgOdomCommand):
 	msgOdomCommand = msg
 
 def sendMotorCommand():
-	global msgOdomCommand, msgOdom, msgMot, pubMot
+	global msgOdomCommand, msgOdom, msgMot, pubMot, max_power, max_rotation
 
 	if msgOdom == None:
 		return
 		
 	# Decide what motors to turn on, and send MotorCommand
-	
-	max_power = 1.00
-	max_rotation = 0.10
-	
+		
 	center = msgOdom.pose.pose.position
 	target = msgOdomCommand.pose.pose.position
 	try:
@@ -99,6 +98,49 @@ def sendMotorCommand():
 	msgMot.motor_id = 0
 	msgMot.power = 1
 	pubMot.publish(msgMot)
+
+def visualThrustCB(objectMsg):
+	global max_power, max_rotation
+
+	centerThresh = .2
+	camCenterX= objectMsg.camera_info.width/2
+	camCenterY = objectMsg.camera_info.height/2
+
+	objectCenterX = objectMsg.x + objectMsg.width/2
+	objectCenterY = objectMsg.y + objectMsg.height/2
+	
+	# If target is already centered, move forward, and correct more slowly
+	if camCenterX - (camCenterX * centerThresh) <= objectCenterX <= camCenterX + (camCenterX * centerThresh):
+		msgMot.power[0] = max_power
+		msgMot.power[1] = max_power
+		translatePower = max_power/4
+	else:
+		translatePower = max_power/2
+
+	
+	if objectCenterX < camCenterX:
+		msgMot.power[4] = translatePower
+		msgMot.power[5] = translatePower
+	else:
+		msgMot.power[4] = translatePower * -1
+		msgMot.power[5] = translatePower * -1
+
+	if objectCenterY < camCenterY:
+		msgMot.power[2] = translatePower * -1
+		msgMot.power[3] = translatePower * -1
+	else:
+		msgMot.power[2] = translatePower
+		msgMot.power[3] = translatePower
+
+def spin(left = True):
+	global max_rotate
+
+	rotate = max_rotate
+	if not left:
+		rotate *= -1	
+
+	msgMot.power[4] = rotate
+	msgMot.power[5] = rotate
 
 def controller():
 	global pubMot, msgMot
