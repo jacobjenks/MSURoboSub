@@ -62,7 +62,7 @@
 
 	<!-- Static transforms -->
 	<node pkg="tf2_ros" type="static_transform_publisher" name="odom_broadcaster" args="0 0 0 0 0 0 1 map odom"/>
-	<!--<node pkg="tf2_ros" type="static_transform_publisher" name="base_link_broadcaster" args="0 0 0 0 0 0 1 odom base_link"/>-->
+	<node pkg="tf2_ros" type="static_transform_publisher" name="base_link_broadcaster" args="0 0 0 0 0 0 1 odom base_link"/>
 	<node pkg="tf2_ros" type="static_transform_publisher" name="imu0_broadcaster" args="0 1 0 0 0 0 1 base_link imu0"/>
 	<node pkg="tf2_ros" type="static_transform_publisher" name="odom0_broadcaster" args="0 0 0 0 0 0 1 base_link depth"/>
 	<node pkg="tf2_ros" type="static_transform_publisher" name="sub_front_broadcaster" args="0.5 0 0 0 0 0 1 base_link sub_front"/>
