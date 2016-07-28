@@ -35,7 +35,7 @@ class Task:
 			self.subTasks = subTasks
 
 		rospy.init_node('Task', anonymous=True)
-		self.pubControl = rospy.Publisher('controller/pose', Odometry, queue_size=5)
+		self.pubControl = rospy.Publisher('controller/moveTo', Odometry, queue_size=5)
 		self.pubStatus = rospy.Publisher('mission/status', String, queue_size=5)
 
 
@@ -233,6 +233,15 @@ class PneumaticTask(Task):
 		self.pneuMsg.header.stamp = rospy.get_rostime()
 		pneuPub.publish(self.pneuMsg)
 
+class HoldHeadingTask(Task):
+
+	def __init__(self, priority, name, subTasks, pose):
+		Task.__init(self, name, priority, subTasks)
+		self.heading = pose
+
+	def runSelf(self):
+		self.pubControl(pose)
+
 
 class TestTask(Task):
 
@@ -283,6 +292,19 @@ class TestControllerMission(Task):
 		subTasks.append(MoveToTask(2, "Point 4", [], MoveToTargetLocation(msg)))
 
 		Task.__init__(self, 0, "Test Controller Mission", subTasks)
+
+
+class StupidMission(Task):
+	
+	def __init__(self):
+		subTasks = []
+		subTasks.append(MaintainDepthTask())
+		subTasks.append(HoldDepthTask())
+
+		pose = Pose()
+
+		Task.__init__(self, 0, "Stupid Mission", subTasks)
+
 
 
 #TODO: Create competition mission, and specific testing missions
