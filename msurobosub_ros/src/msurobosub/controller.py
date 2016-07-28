@@ -29,14 +29,14 @@ def turnLeft(front, center, target): #Remember the ROS standard orientation
 
 	if target.x > m*target.y + b:
 		if front.y < 0:
-			return false
+			return False
 		else:
-			return true
+			return True
 	else:
 		if front.y < 0:
-			return true
+			return True
 		else:
-			return false
+			return False
 
 def odomCommandCallback(msgOdomCommand):
 	global msg
@@ -52,13 +52,21 @@ def sendMotorCommand():
 		
 	center = msgOdom.pose.pose.position
 	target = msgOdomCommand.pose.pose.position
-	try:
-		trans = tfBuffer.lookup_transform('base_link', 'sub_front', rospy.Time())
-	except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-		return
-
-	front = trans.transform.translation
 	
+	tfBuffer = tf2_ros.Buffer()
+	listener = tf2_ros.TransformListener(tfBuffer)
+
+	rate = rospy.Rate(10.0)
+	while not rospy.is_shutdown():
+		try:
+			trans = tfBuffer.lookup_transform('base_link', 'sub_front',  rospy.Time())
+			break
+		except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+        		rate.sleep()
+			return
+	
+	front = trans.transform.translation
+
 	x_comp = target.x - center.x
 	y_comp = target.y - center.y
 	z_comp = target.z - center.z
@@ -75,7 +83,10 @@ def sendMotorCommand():
 	y_orient = (front.y - center.y) / unit_orientation_factor
 
 	#strafe thrusters
-	if turnLeft(front, center, target):
+	if turnLeft(front, center, target) and y_unit == 0:
+		msgMot.power[4] = 0
+		msgMot.power[5] = 0
+	elif turnLeft(front, center, target):
 		msgMot.power[4] = y_unit - max_rotation
 		msgMot.power[5] = y_unit + max_rotation
 	else:
@@ -94,9 +105,7 @@ def sendMotorCommand():
 	else:
 		msgMot.power[2] = z_unit
 		msgMot.power[3] = z_unit
-
-	msgMot.motor_id = 0
-	msgMot.power = 1
+	
 	pubMot.publish(msgMot)
 
 def visualThrustCB(objectMsg):
@@ -152,15 +161,29 @@ def controller():
 
 	msgMot = MotorCommand()
 	msgMot.header.seq = 0
-	msgMot.header.frame_id = "base_frame"
+	msgMot.header.frame_id = "base_link"
 
 	rate = rospy.Rate(50)
 	while not rospy.is_shutdown():
 		sendMotorCommand()
 		rate.sleep()
 
+def testController():
+	global msgOdom, msgOdomCommand
+
+	msgOdomCommand = Odometry()
+	msgOdomCommand.pose.pose.position.x = -2
+	msgOdomCommand.pose.pose.position.y = 2
+	msgOdomCommand.pose.pose.position.z = 2
+	
+	msgOdom = Odometry()
+	msgOdom.pose.pose.position.x = 0
+	msgOdom.pose.pose.position.y = 0
+	msgOdom.pose.pose.position.z = 0
+
 if __name__ == '__main__':
 	try:
+		testController()
 		controller()
 	except rospy.ROSInterruptException:
 		pass
