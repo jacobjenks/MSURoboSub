@@ -24,7 +24,7 @@ const int armClosePin = 7;
 const int depthPin = 0;
 
 bool pneumaticLock = true;
-float surfacePSI = -1;
+float surfacePSI = 10.44;
 
 int pneumaticShutoffPin = 0;//Pin to shut off
 unsigned long pneumaticShutoffTime = 0;//Time at which we should turn off pneumatic valve
@@ -48,18 +48,18 @@ Arduino_I2C_ESC motors[numMotors] = {
 
 //Motor pins
 int motorPins[numMotors] = {
-  36,//ForwardPort
-  38,//ForwardStarboard
-  40,//DepthFore
-  42,//DepthAft
-  46,//StrafeForward
-  44//StrafeBack
+  46,//ForwardPort
+  42,//ForwardStarboard
+  44,//DepthFore
+  36,//DepthAft
+  40,//StrafeForward
+  38//StrafeBack
 };
 
 Servo motors[numMotors];
 
 //Array for direction motor runs
-int direction[numMotors] = {1, -1, -1, -1, -1, -1};
+float direction[numMotors] = {1, 1, -.88, -1, -1, -1};
 int lastMotorCommand[numMotors] = {1500, 1500, 1500, 1500, 1500, 1500};
 int lastMotor = 0;//Which motor did we send an update for last?
 unsigned long motorUpdateTime = 0;//Time at which we should send next motor update
@@ -81,7 +81,7 @@ void pneumaticCommandCallback(const msurobosub::PneumaticCommand& command){
   switch(command.command){
     case 0://Pneumatic lock
       if(pneumaticLock){
-        pneumaticLock = false;
+        pneumaticLock =  false;
         nh.loginfo("Pneumatics unlocked");
       }
       else{
