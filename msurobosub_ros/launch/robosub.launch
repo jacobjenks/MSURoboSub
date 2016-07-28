@@ -14,10 +14,10 @@
 	<!-- Nodes -->
 
 	<!-- Mission -->
-	<!--<node respawn="true" pkg="msurobosub" type="task.py" name="mission"/>
-	<node respawn="true" pkg="msurobosub" type="controller.py" name="controller"/>-->
+	<!--<node respawn="true" pkg="msurobosub" type="task.py" name="mission"/>-->
+	<node respawn="true" pkg="msurobosub" type="controller.py" name="controller"/>
 
-	<node respawn="true" pkg="frcnn_object_detector" type="object_detector.py" name="object_detector"/>
+	<!--<node respawn="true" pkg="frcnn_object_detector" type="object_detector.py" name="object_detector"/>-->
 
 	<!-- Arduino relays  -->
 	<node respawn="true" pkg="rosserial_python" type="serial_node.py" name="arduino_motors">
@@ -114,6 +114,7 @@ false, false, false]</rosparam>
 	</node>
 
 	<!-- World modeling -->
+	<!--
 	<node pkg="hector_object_tracker" type="object_tracker" name="object_tracker" output="screen">
       <param name="angle_variance" type="double" value="0.121846968"/>
       <param name="distance_variance" type="double" value="1"/>
@@ -156,30 +157,18 @@ false, false, false]</rosparam>
           marker_color: [0.8, 0.0, 0.0]
           with_orientation: true
           min_distance_between_objects: 0.3
-        <!--
-        verification_services:
-          - service: object_verification/verify_object
-            type: object
-            class_id: victim
-            ignore: true
-          - service: object_verification/verify_percept
-            type: percept
-            class_id: victim
-            required: true
-        negative_update:
-          - topic: thermal/camera_info
-            class_id: victim
-            min_distance: 0.1
-            max_distance: 1.6
-            negative_support: 0.5
-        -->
       </rosparam>
       <remap from="visualization_marker" to="worldmodel/visualization_marker" />
       <remap from="visualization_marker_array" to="worldmodel/visualization_marker_array" />
     </node>
+	-->
 
 	<!--<node pkg="rqt" type="rqt" name="rqt"></node>-->
 	<param name="robot_description" textfile="$(find msurobosub)/robosub_model.urdf"/>
 	<!--<node name="rqt" pkg="rqt" type="rqt"/>-->
+
+	<node pkg="rosbag" type="record" name="rosbag_record_cam"
+		args="record -o /home/robosub/MSURoboSub/logs/robosub /sensors/camF/image_raw /sensors/stereo_bot/left/image_raw"
+	/>
 
 </launch>

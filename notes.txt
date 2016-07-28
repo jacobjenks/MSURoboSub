@@ -39,3 +39,6 @@ Dependencies that need to be installed separately:
 	ros-indigo-cv-camera
 	ros-indigo-hector-worldmodel
 	Arduino_I2C_ESC (Bluerobotics)
+
+To fix graphics card after every boot:
+	nvidia-modprobe -u -c=0
