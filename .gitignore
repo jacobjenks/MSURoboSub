@@ -4,3 +4,4 @@ build/
 install/
 logs/*
 *.stl
+*.swp

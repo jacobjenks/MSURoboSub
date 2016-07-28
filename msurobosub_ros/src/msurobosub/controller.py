@@ -6,13 +6,15 @@ import math
 import tf2_ros
 import geometry_msgs.msg
 
-
 msgOdom = None
 msgOdomCommand = None
 msgMot = None
 msgOdomFront = None
 
 pubMot = None
+
+max_power = 1.00
+max_rotation = 0.10
 
 def odomCallback(msg):
 	global msgOdom
@@ -27,47 +29,43 @@ def turnLeft(front, center, target): #Remember the ROS standard orientation
 
 	if target.x > m*target.y + b:
 		if front.y < 0:
-			return false
+			return False
 		else:
-			return true
+			return True
 	else:
 		if front.y < 0:
-			return true
+			return True
 		else:
-			return false
+			return False
 
 def odomCommandCallback(msgOdomCommand):
 	global msg
 	msgOdomCommand = msg
 
 def sendMotorCommand():
-	global msgOdomCommand, msgOdom, msgMot, pubMot
+	global msgOdomCommand, msgOdom, msgMot, pubMot, max_power, max_rotation
 
 	if msgOdom == None:
 		return
 		
 	# Decide what motors to turn on, and send MotorCommand
-	
-	max_power = 1.00
-	max_rotation = 0.10
-	
+		
 	center = msgOdom.pose.pose.position
 	target = msgOdomCommand.pose.pose.position
 	
 	tfBuffer = tf2_ros.Buffer()
-	sub_comp_name = rospy.get_param('odom', 'odom_frame')
-	try:
-		trans = tfBuffer.lookup_transform(sub_comp_name, 'sub_front_broadcaster', rospy.Time())
-	except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
-		print e
-		return
+	listener = tf2_ros.TransformListener(tfBuffer)
 
+	rate = rospy.Rate(10.0)
+	while not rospy.is_shutdown():
+		try:
+			trans = tfBuffer.lookup_transform('base_link', 'sub_front',  rospy.Time())
+			break
+		except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+        		rate.sleep()
+			return
+	
 	front = trans.transform.translation
-		
-	#testing
-	print center.x + ' ' + center.y + ' ' + center.z
-	print target.x + ' ' + target.y + ' ' + target.z
-	#testing	
 
 	x_comp = target.x - center.x
 	y_comp = target.y - center.y
@@ -85,7 +83,10 @@ def sendMotorCommand():
 	y_orient = (front.y - center.y) / unit_orientation_factor
 
 	#strafe thrusters
-	if turnLeft(front, center, target):
+	if turnLeft(front, center, target) and y_unit == 0:
+		msgMot.power[4] = 0
+		msgMot.power[5] = 0
+	elif turnLeft(front, center, target):
 		msgMot.power[4] = y_unit - max_rotation
 		msgMot.power[5] = y_unit + max_rotation
 	else:
@@ -104,10 +105,51 @@ def sendMotorCommand():
 	else:
 		msgMot.power[2] = z_unit
 		msgMot.power[3] = z_unit
-
-	msgMot.motor_id = 0
-	msgMot.power = 1
+	
 	pubMot.publish(msgMot)
+
+def visualThrustCB(objectMsg):
+	global max_power, max_rotation
+
+	centerThresh = .2
+	camCenterX= objectMsg.camera_info.width/2
+	camCenterY = objectMsg.camera_info.height/2
+
+	objectCenterX = objectMsg.x + objectMsg.width/2
+	objectCenterY = objectMsg.y + objectMsg.height/2
+	
+	# If target is already centered, move forward, and correct more slowly
+	if camCenterX - (camCenterX * centerThresh) <= objectCenterX <= camCenterX + (camCenterX * centerThresh):
+		msgMot.power[0] = max_power
+		msgMot.power[1] = max_power
+		translatePower = max_power/4
+	else:
+		translatePower = max_power/2
+
+	
+	if objectCenterX < camCenterX:
+		msgMot.power[4] = translatePower
+		msgMot.power[5] = translatePower
+	else:
+		msgMot.power[4] = translatePower * -1
+		msgMot.power[5] = translatePower * -1
+
+	if objectCenterY < camCenterY:
+		msgMot.power[2] = translatePower * -1
+		msgMot.power[3] = translatePower * -1
+	else:
+		msgMot.power[2] = translatePower
+		msgMot.power[3] = translatePower
+
+def spin(left = True):
+	global max_rotate
+
+	rotate = max_rotate
+	if not left:
+		rotate *= -1	
+
+	msgMot.power[4] = rotate
+	msgMot.power[5] = rotate
 
 def controller():
 	global pubMot, msgMot
@@ -119,7 +161,7 @@ def controller():
 
 	msgMot = MotorCommand()
 	msgMot.header.seq = 0
-	msgMot.header.frame_id = "base_frame"
+	msgMot.header.frame_id = "base_link"
 
 	rate = rospy.Rate(50)
 	while not rospy.is_shutdown():
@@ -130,10 +172,10 @@ def testController():
 	global msgOdom, msgOdomCommand
 
 	msgOdomCommand = Odometry()
-	msgOdomCommand.pose.pose.position.x = 10
-	msgOdomCommand.pose.pose.position.y = 0
-	msgOdomCommand.pose.pose.position.z = 0
-
+	msgOdomCommand.pose.pose.position.x = -2
+	msgOdomCommand.pose.pose.position.y = 2
+	msgOdomCommand.pose.pose.position.z = 2
+	
 	msgOdom = Odometry()
 	msgOdom.pose.pose.position.x = 0
 	msgOdom.pose.pose.position.y = 0

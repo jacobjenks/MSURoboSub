@@ -38,11 +38,10 @@ class Task:
 		self.pubControl = rospy.Publisher('controller/moveTo', Odometry, queue_size=5)
 		self.pubStatus = rospy.Publisher('mission/status', String, queue_size=5)
 
-
 		if self.priority == 0:
 			rate = rospy.Rate(10)
 			rospy.Subscriber("command/missionToggle", Bool, self.runMissionCallback)
-			while not rospy.is_shutdown():
+			while not rospy.is_shutdown():	
 				if self.runMission:
 					self.run()
 				rate.sleep()
@@ -290,7 +289,7 @@ class TestControllerMission(Task):
 		msg = Odometry()
 		msg.pose.pose.position.x = 0
 		subTasks.append(MoveToTask(2, "Point 4", [], MoveToTargetLocation(msg)))
-
+		
 		Task.__init__(self, 0, "Test Controller Mission", subTasks)
 
 
