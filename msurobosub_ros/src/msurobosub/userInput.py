@@ -19,6 +19,7 @@ commandTimeout = None
 commandTimeoutDelay = 200
 
 motorPower = 1
+motorStopped = False
 
 #Map motor activations to key presses
 #Key id maps to list of motor ids to activate (keys), and the direction with which to activate (values)
@@ -86,11 +87,12 @@ Motor IDs:
 5 StrafeBottom
 '''
 def sendMotorCommand():
-	global pubMotor, msgMotor
+	global pubMotor, msgMotor, motorStopped
 	msgMotor.header.seq += 1
 	msgMotor.header.stamp = rospy.get_rostime()
-	if all(msg_mot is 0 for msg_mot in msgMotor.power):
-		pubMotor.publish(msgMotor)
+
+#	if any(msg_mot is not 0 for msg_mot in msgMotor.power) or motorStopped is False:
+	pubMotor.publish(msgMotor)
 
 '''
 Pneumatic IDs:

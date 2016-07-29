@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import math
-from msurobosub.msg import Depth 
+from msurobosub.msg import Depth, MotorCommand
 from geometry_msgs.msg import Pose, PoseWithCovariance, Point
 from sensor_msgs.msg import Imu
 from nav_msgs.msg import Odometry
@@ -25,6 +25,7 @@ class Task:
 	runMission = True# Whether or not to run at all - allows us to pause mission
 
 	def __init__(self, priority = 0, name = "Task", subTasks = None):
+		self.status = TaskStatus.waiting
 		self.priority = priority
 		self.name = name
 		if subTasks == None:
@@ -232,14 +233,29 @@ class PneumaticTask(Task):
 		self.pneuMsg.header.stamp = rospy.get_rostime()
 		pneuPub.publish(self.pneuMsg)
 
-class HoldHeadingTask(Task):
+class MotorCommandTask(Task):
 
-	def __init__(self, priority, name, subTasks, pose):
-		Task.__init(self, name, priority, subTasks)
-		self.heading = pose
+	def __init__(self, priority, name, subTasks, motorPower, timeout):
+		Task.__init__(self, priority, name, subTasks)
+		self.motorCommand = MotorCommand()
+		self.motorCommand.power = motorPower
+		self.timeout = timeout
+		self.started = False
+		self.pubMotor = rospy.Publisher("command/motor", MotorCommand, queue_size=12)
+		self.status = TaskStatus.ready
 
 	def runSelf(self):
-		self.pubControl(pose)
+		if not self.started:
+			self.start = rospy.get_time()
+			self.started = True
+		if self.timeout is not 0 and self.start + self.timeout < rospy.get_time():
+			self.status = TaskStatus.complete
+			return
+
+		self.motorCommand.header.seq += 1
+		self.motorCommand.header.stamp = rospy.get_rostime()
+		self.motorCommand.header.frame_id = "base_link"
+		self.pubMotor.publish(self.motorCommand)
 
 
 class TestTask(Task):
@@ -297,11 +313,9 @@ class StupidMission(Task):
 	
 	def __init__(self):
 		subTasks = []
-		subTasks.append(MaintainDepthTask())
-		subTasks.append(HoldDepthTask())
+		subTasks.append(MotorCommandTask(1, "Go", [], [0, 0, -.155, -.185, 0, 0], 0))
 
-		pose = Pose()
-
+		subTasks.append(MotorCommandTask(2, "Stop", [], [0, 0, 0, 0, 0, 0], 0))
 		Task.__init__(self, 0, "Stupid Mission", subTasks)
 
 
@@ -317,6 +331,7 @@ class CompetitionMission(Task):
 
 if __name__ == '__main__':
 	try:
-		test = TestControllerMission()	
+		#test = TestControllerMission()	
+		StupidMission()
 	except rospy.ROSInterruptException:
 		pass
