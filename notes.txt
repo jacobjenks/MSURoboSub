@@ -42,3 +42,8 @@ Dependencies that need to be installed separately:
 
 To fix graphics card after every boot:
 	nvidia-modprobe -u -c=0
+
+To fix remote desktop issues:
+	open /etc/NetworkManager/NetworkManager.conf
+	comment out dnsmasq
+	set managed=true

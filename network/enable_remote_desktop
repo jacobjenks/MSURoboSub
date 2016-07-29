@@ -1,0 +1,4 @@
+cp /etc/network/interfaces.remote /etc/network/interfaces
+service network-manager restart
+/etc/init.d/networking restart
+x11vnc -forever -xkb -noxrecord -noxfixes -noxdamage -display :0 -auth /var/run/lightdm/root/:0 -usepw

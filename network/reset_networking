@@ -1,0 +1,2 @@
+cp /etc/network/interfaces.default /etc/network/interfaces
+service network-manager restart
