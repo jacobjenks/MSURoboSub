@@ -59,7 +59,7 @@ int motorPins[numMotors] = {
 Servo motors[numMotors];
 
 //Array for direction motor runs
-float direction[numMotors] = {1, 1, -.88, -1, -1, -1};
+float direction[numMotors] = {.85, 1, -.88, -1, -1, -1};
 int lastMotorCommand[numMotors] = {1500, 1500, 1500, 1500, 1500, 1500};
 int lastMotor = 0;//Which motor did we send an update for last?
 unsigned long motorUpdateTime = 0;//Time at which we should send next motor update

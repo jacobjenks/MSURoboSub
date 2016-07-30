@@ -14,7 +14,7 @@
 	<!-- Nodes -->
 
 	<!-- Mission -->
-	<!--<node respawn="true" pkg="msurobosub" type="task.py" name="mission"/>-->
+	<node respawn="true" pkg="msurobosub" type="task.py" name="mission"/>
 	<!--<node respawn="true" pkg="msurobosub" type="controller.py" name="controller"/>-->
 
 	<!--<node respawn="true" pkg="frcnn_object_detector" type="object_detector.py" name="object_detector"/>-->
