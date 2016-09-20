@@ -316,7 +316,7 @@ class StupidMission(Task):
 		subTasks = []
 		subTasks.append(MotorCommandTask(1, "Wait", [], [0, 0, 0, 0, 0, 0], 25))
 		subTasks.append(MotorCommandTask(1, "Down", [], [0, 0, -1, -1, 0, 0], 2))
-		subTasks.append(MotorCommandTask(1, "Go", [], [1, 1, -.34, -.34, 0, 0], 45))
+		subTasks.append(MotorCommandTask(1, "Go", [], [1, 1, -.34, -.34, 0, 0], 400))
 
 		subTasks.append(MotorCommandTask(2, "Stop", [], [0, 0, 0, 0, 0, 0], 0))
 		Task.__init__(self, 0, "Stupid Mission", subTasks)

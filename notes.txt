@@ -47,3 +47,7 @@ To fix remote desktop issues:
 	open /etc/NetworkManager/NetworkManager.conf
 	comment out dnsmasq
 	set managed=true
+
+FRCNN installation tips and tricks:
+	install CUDA 7.0 with cuDNN v4
+	install nvidia-modprobe
