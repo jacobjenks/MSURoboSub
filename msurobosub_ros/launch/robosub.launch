@@ -6,27 +6,30 @@
 
 <launch>
 
-	<!-- -->
 	<!-- Parameters -->
-	<param name="robot_description" command="cat $(find msurobosub)/robosub_model.urdf" />
+	<param name="robot_description" command="cat $(find msurobosub)/robosub_model.urdf" />	
 
-	<!-- -->
+	<!-- END Parameters -->
+
 	<!-- Nodes -->
 
 	<!-- Mission -->
 	<node respawn="true" pkg="msurobosub" type="task.py" name="mission"/>
 	<!--<node respawn="true" pkg="msurobosub" type="controller.py" name="controller"/>-->
-
 	<!--<node respawn="true" pkg="frcnn_object_detector" type="object_detector.py" name="object_detector"/>-->
+	
+	<!-- END Mission -->	
 
-	<!-- Arduino relays  -->
+	<!-- Arduino relays -->
 	<node respawn="true" pkg="rosserial_python" type="serial_node.py" name="arduino_motors">
 		<param name="port" value="/dev/ttyACM0"/>
 	</node>
-	
+
 	<!--<node respawn="true" pkg="rosserial_python" type="serial_node.py" name="arduino_peripherals">
 		<param name="port" value="/dev/ttyACM1"/>
 	</node>-->
+	
+	<!-- END Arduino relays -->
 
 	<!-- Sensor data -->
 	<node respawn="true" pkg="msurobosub" type="imu.py" name="imu"></node>
@@ -40,7 +43,7 @@
 		<param name="image_height" value="480"/>
 	</node>
  
-	<node pkg="cv_camera" type="cv_camera_node" ns="sensors/stereo_bot/" name="left">
+	<!--<node pkg="cv_camera" type="cv_camera_node" ns="sensors/stereo_bot/" name="left">
 		<param name="device_id" value="1"/>
 		<param name="frame_id" value="camDL"/>
 		<param name="image_width" value="640"/>
@@ -54,11 +57,16 @@
 		<param name="image_width" value="640"/>
 		<param name="image_height" value="480"/>
 		<param name="camera_info_url" value="package://msurobosub/calibration/left.yaml"/>
-	</node>
+	</node>-->
+
+	<!-- END Camera data -->
+
 
 	<!-- State publisher -->
 	<!--<node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub" >
 	</node>-->
+
+	<!-- END State publisher -->
 
 	<!-- Static transforms -->
 	<node pkg="tf2_ros" type="static_transform_publisher" name="odom_broadcaster" args="0 0 0 0 0 0 1 map odom"/>
@@ -66,6 +74,8 @@
 	<node pkg="tf2_ros" type="static_transform_publisher" name="imu0_broadcaster" args="0 1 0 0 0 0 1 base_link imu0"/>
 	<node pkg="tf2_ros" type="static_transform_publisher" name="odom0_broadcaster" args="0 0 0 0 0 0 1 base_link depth"/>
 	<node pkg="tf2_ros" type="static_transform_publisher" name="sub_front_broadcaster" args="0.5 0 0 0 0 0 1 base_link sub_front"/>
+
+	<!-- END Static transforms -->
 
 	<!-- State estimate for the robot given IMU data -->
 	<!-- wiki.ros.org/robot_localization -->
@@ -112,6 +122,8 @@ false, false, false]</rosparam>
 
 	<!--<node respawn="true" pkg="msurobosub" type="userInput.py" name="user_input">
 	</node>-->
+
+	<!-- END Keyboard input -->
 
 	<!-- World modeling -->
 	<!--
@@ -163,12 +175,19 @@ false, false, false]</rosparam>
     </node>
 	-->
 
+	<!-- END World modeling -->
+
 	<!--<node pkg="rqt" type="rqt" name="rqt"></node>-->
 	<param name="robot_description" textfile="$(find msurobosub)/robosub_model.urdf"/>
 	<!--<node name="rqt" pkg="rqt" type="rqt"/>-->
-
+	
+	<!-- Camera Recording  -->
 	<node pkg="rosbag" type="record" name="rosbag_record_cam"
 		args="record -o /home/robosub/MSURoboSub/logs/robosub /sensors/camF/image_raw /sensors/stereo_bot/left/image_raw"
 	/>
+
+	<!-- END Camera Recording  -->
+
+	<!-- END Nodes -->
 
 </launch>
