@@ -1,2 +1,2 @@
 Header header
-float32[6] power
+float32[8] power

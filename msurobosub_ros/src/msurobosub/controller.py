@@ -6,6 +6,12 @@ import math
 import tf2_ros
 import geometry_msgs.msg
 
+'''
+Rewite controller logic to integrate two additional thrusters
+Double check linear algebra calculations
+Are linear transformations the right tool to use here
+Does this even matter if I am just going to be using the visual controller?
+'''
 msgOdom = None
 msgOdomCommand = None
 msgMot = None
@@ -84,14 +90,14 @@ def sendMotorCommand():
 
 	#strafe thrusters
 	if turnLeft(front, center, target) and y_unit == 0:
-		msgMot.power[4] = 0
-		msgMot.power[5] = 0
+		msgMot.power[2] = 0
+		msgMot.power[3] = 0
 	elif turnLeft(front, center, target):
-		msgMot.power[4] = y_unit - max_rotation
-		msgMot.power[5] = y_unit + max_rotation
+		msgMot.power[2] = y_unit - max_rotation
+		msgMot.power[3] = y_unit + max_rotation
 	else:
-		msgMot.power[4] = y_unit + max_rotation
-		msgMot.power[5] = y_unit - max_rotation
+		msgMot.power[2] = y_unit + max_rotation
+		msgMot.power[3] = y_unit - max_rotation
 	
 	#forward thrusters
 	if math.pi/4 >= math.acos((x_unit * x_orient) + (y_unit * y_orient)):
@@ -100,11 +106,15 @@ def sendMotorCommand():
 
 	#depth thrusters
 	if z_unit > max_power:
-		msgMot.power[2] = max_power
-		msgMot.power[3] = max_power
+		msgMot.power[4] = max_power
+		msgMot.power[5] = max_power
+		msgMot.power[6] = max_power
+		msgMot.power[7] = max_power
 	else:
-		msgMot.power[2] = z_unit
-		msgMot.power[3] = z_unit
+		msgMot.power[4] = z_unit
+		msgMot.power[5] = z_unit
+		msgMot.power[6] = z_unit
+		msgMot.power[7] = z_unit
 	
 	pubMot.publish(msgMot)
 
@@ -128,19 +138,24 @@ def visualThrustCB(objectMsg):
 
 	
 	if objectCenterX < camCenterX:
-		msgMot.power[4] = translatePower
-		msgMot.power[5] = translatePower
-	else:
-		msgMot.power[4] = translatePower * -1
-		msgMot.power[5] = translatePower * -1
-
-	if objectCenterY < camCenterY:
-		msgMot.power[2] = translatePower * -1
-		msgMot.power[3] = translatePower * -1
-	else:
 		msgMot.power[2] = translatePower
 		msgMot.power[3] = translatePower
+	else:
+		msgMot.power[2] = translatePower * -1
+		msgMot.power[3] = translatePower * -1
 
+	if objectCenterY < camCenterY:
+		msgMot.power[4] = translatePower * -1
+		msgMot.power[5] = translatePower * -1
+		msgMot.power[6] = translatePower * -1
+		msgMot.power[7] = translatePower * -1
+	else:
+		msgMot.power[4] = translatePower
+		msgMot.power[5] = translatePower
+		msgMot.power[6] = translatePower
+		msgMot.power[7] = translatePower
+
+#function spin never called
 def spin(left = True):
 	global max_rotate
 
@@ -148,8 +163,8 @@ def spin(left = True):
 	if not left:
 		rotate *= -1	
 
-	msgMot.power[4] = rotate
-	msgMot.power[5] = rotate
+	msgMot.power[2] = rotate
+	msgMot.power[3] = rotate
 
 def controller():
 	global pubMot, msgMot
@@ -184,6 +199,6 @@ def testController():
 if __name__ == '__main__':
 	try:
 		testController()
-		controller()
+		#controller()
 	except rospy.ROSInterruptException:
 		pass

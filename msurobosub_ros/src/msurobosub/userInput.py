@@ -24,15 +24,15 @@ motorStopped = False
 #Map motor activations to key presses
 #Key id maps to list of motor ids to activate (keys), and the direction with which to activate (values)
 keyMapping = {119: {0: 1, 1: 1},#w, forward
-			  97:  {4: -1, 5: -1},#a, strafe left
+			  97:  {6: -1, 7: -1},#a, strafe left
 			  115: {0: -1, 1: -1},#s, reverse
 			  100: {4: 1, 5: 1},#d, strafe right
 			  113: {0: -1, 1: 1},#q, rotate left
 			  101: {0: 1, 1: -1},#e, rotate right
-			  99:  {2: -1, 3: -1},#c, descend
-			  32:  {2: 1, 3: 1},#space, ascend
-			  120: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0},#x, stop all motors 
-			  116: {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1}#t, test all motors
+			  99:  {2: -1, 3: -1, 4: -1, 5: -1},#c, descend -> NOT sure about the -1 setting. Figure this out from live testing
+			  32:  {2: 1, 3: 1, 4: 1, 5: 1},#space, ascend
+			  120: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0},#x, stop all motors 
+			  116: {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1}#t, test all motors
 			 }
 
 #@param Key key: The message for the key that was pressed
@@ -81,10 +81,12 @@ def setMotorPower(key, power = None):
 Motor IDs:
 0 ForwardPort
 1 ForwardStar
-2 DepthFore
-3 DepthAft
-4 StrafeTop
-5 StrafeBottom
+2 DepthForePort
+3 DepthAftPort
+4 DepthForeStar
+5 DepthAftStar
+6 StrafeTop
+7 StrafeBottom
 '''
 def sendMotorCommand():
 	global pubMotor, msgMotor, motorStopped
@@ -101,8 +103,8 @@ Pneumatic IDs:
 2 Torpedo 2
 3 Dropper 1
 4 Dropper 2
-5 Arm open 
-6 Arm close 
+5 Arm up/down 
+6 Arm open/close
 '''
 def sendPneuCommand():
 	global pubPneu, msgPneu

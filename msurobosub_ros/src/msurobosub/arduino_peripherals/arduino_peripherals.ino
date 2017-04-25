@@ -18,19 +18,27 @@
  * relays all of this information between the Arduino and ROS
 */
 
-const int numMotors = 6;
-const int torp1Pin = 4;
-const int torp2Pin = 5;
-const int drop1Pin = 2;
-const int drop2Pin = 3;
-const int armOpenPin = 7;
-const int armClosePin = 6;
-const int hydroPin1 = 0;
-const int hydroPin2 = 1;
-const int hydroPin3 = 2;
-const int depthPin = 3;
+const int numMotors = 8; //Unused Declaration
+
+/****** Pneumatics *******/
+const int armUpDownPin = 33;
+const int handOpenClosePin = 35;
+const int dropLeftPin = 37;
+const int dropRightPin = 39;
+const int torpLeftPin = 41;
+const int torpRightPin = 43;
+
+/****** Sensors *******/
+const int depthPin = A0;
+const int handPressure1 = A1;
+const int handPressure2 = A2;
+//const int hydroPin1;
+//const int hydroPin2;
+//const int hydroPin3;
 
 bool pneumaticLock = true;
+bool armDown = false;
+bool handOpen = false;
 
 //PSI at water surface - change when elevation changes
 //float surfacePSI = 10.696;
@@ -45,6 +53,7 @@ ros::Publisher pubHydro("sensors/hydrophone", &hydroMsg);
 int pneumaticShutoffPin = 0;//Pin to shut off
 unsigned long pneumaticShutoffTime = 0;//Time at which we should turn off pneumatic valve
 
+//I have no idea what sthese values should be - ask the EE's or the inter-highway
 void pneumaticCommandCallback(const msurobosub::PneumaticCommand& command){
   switch(command.command){
     case 0://Pneumatic lock
@@ -57,40 +66,54 @@ void pneumaticCommandCallback(const msurobosub::PneumaticCommand& command){
         nh.loginfo("Pneumatics locked");
       }
       break;
-    case 1://Torp 1
+    case 41://Left Torpedo
       if(!pneumaticLock){
         nh.loginfo("Firing torpedo 1");
-        activatePneumatics(torp1Pin, 250);
+        activatePneumatics(torpLeftPin, 250);
       }
       break;
-    case 2://Torp 2
+    case 43://Right Torpedo
       if(!pneumaticLock){
         nh.loginfo("Firing torpedo 2");
-        activatePneumatics(torp2Pin, 250);
+        activatePneumatics(torpRightPin, 250);
       }
       break;
-    case 3://Drop 1
+    case 37://Left Dropper
       if(!pneumaticLock){
         nh.loginfo("Releasing dropper 1");
-        activatePneumatics(drop1Pin, 250);
+        activatePneumatics(dropLeftPin, 250);
       }
       break;
-    case 4://Drop 2
+    case 39://Right Dropper
       if(!pneumaticLock){
         nh.loginfo("Releasing dropper 1");
-        activatePneumatics(drop2Pin, 250);
+        activatePneumatics(dropRightPin, 250);
       }
       break;
-    case 5://Arm open
+    case 33://Arm Up/Down
       if(!pneumaticLock){
-        nh.loginfo("Opening arm");
-        activatePneumatics(armOpenPin, 3000);
+		if(!armDown) {
+        	nh.loginfo("Lowering arm");
+        	activatePneumatics(armUpDownPin, 3000); //No idea what these should actually be
+		}
+		else {
+			nh.loginfo("Raising arm");
+			activatingPneumatics(armUpDownPin, 3000); //No Idea what these should actually be
+		}
       }
       break;
-    case 6://Arm close
+    case 35://Arm close
       if(!pneumaticLock){
-        nh.loginfo("Closing arm");
-        activatePneumatics(armClosePin, 3000);
+		if(!handOpen) {
+        	nh.loginfo("Opening Hand");
+			handOpen = true;
+        	activatePneumatics(handOpenClosePin, 3000);
+		}
+		else {
+			nh.loginfo("Closing Hand");
+			handOpen = false;
+			activatePneumatics(handOpenClosePin, 3000);
+		}
       }
       break;
     default:
@@ -123,6 +146,7 @@ std_msgs::Header getHeader(std_msgs::Header h){
 }
 
 void sensorUpdate(){
+  /* Hydrophone Sensors
   int hydrophone_sensor_pin1 = analogRead(hydroPin1);
   int hydrophone_sensor_pin2 = analogRead(hydroPin2);
   int hydrophone_sensor_pin3 = analogRead(hydroPin3);
@@ -132,7 +156,9 @@ void sensorUpdate(){
   hydroMsg.distance = 0; 
   hydroMsg.degree = 0;
   pubHydro.publish(&hydroMsg);
+  */
 
+  //Depth sensors
   depthMsg.header = getHeader(depthMsg.header);
   //Convert depth sensor reading to PSI
   depthMsg.psi = (analogRead(depthPin) * .0048828125 - 1)*12.5;
@@ -148,27 +174,27 @@ void sensorUpdate(){
 void setup() {
   Wire.begin();
   nh.initNode();
-  nh.advertise(pubHydro);
+  //nh.advertise(pubHydro);
   nh.advertise(pubDepth);
   nh.subscribe(subPneumaticCommand);
 
   //Initialize pneumatics
-  pinMode(torp1Pin, OUTPUT);
-  pinMode(torp2Pin, OUTPUT);
-  pinMode(drop1Pin, OUTPUT);
-  pinMode(drop2Pin, OUTPUT);
-  pinMode(armOpenPin, OUTPUT);
-  pinMode(armClosePin, OUTPUT);
-  digitalWrite(armOpenPin, HIGH);
-  digitalWrite(armClosePin, HIGH);
-  digitalWrite(torp1Pin, HIGH);
-  digitalWrite(torp2Pin, HIGH);
-  digitalWrite(drop1Pin, HIGH);
-  digitalWrite(drop2Pin, HIGH);
+  pinMode(torpLeftPin, OUTPUT);
+  pinMode(torpRightPin, OUTPUT);
+  pinMode(dropLeftPin, OUTPUT);
+  pinMode(dropRightPin, OUTPUT);
+  pinMode(armUpDownPin, OUTPUT);
+  pinMode(handOpenClosePin, OUTPUT);
+  digitalWrite(armUpDownPin, HIGH);
+  digitalWrite(handOpenClosePin, HIGH);
+  digitalWrite(torpLeftPin, HIGH);
+  digitalWrite(torpRightPin, HIGH);
+  digitalWrite(dropLeftPin, HIGH);
+  digitalWrite(dropRightPin, HIGH);
 
   //Initialize messages
-  hydroMsg.header = getHeader();
-  hydroMsg.header.frame_id = "hydro";
+  //hydroMsg.header = getHeader();
+  //hydroMsg.header.frame_id = "hydro";
   depthMsg.header = getHeader();
   depthMsg.header.frame_id = "depth";
   

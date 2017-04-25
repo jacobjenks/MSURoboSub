@@ -14,22 +14,29 @@
 #include <msurobosub/MotorCommand.h>
 #include <msurobosub/PneumaticCommand.h>
 #include <std_msgs/Header.h>
+/***** Pneumatics *****/
+const int armUpDownPin = 33;
+const int handOpenClosePine = 35;
+const int dropLeftPin = 37;
+const int dropRightPin = 39;
+const int torpLeftPin = 41;
+const int torpRightPin = 43;
 
-const int torp1Pin = 2;
-const int torp2Pin = 3;
-const int drop1Pin = 4;
-const int drop2Pin = 5;
-const int armOpenPin = 6;
-const int armClosePin = 7;
+/***** Sensors *****/
 const int depthPin = 0;
+//const int handPressure1 = 1;
+//const int handPressure2 = 2;
+
 
 bool pneumaticLock = true;
+bool armDown = false;
+bool handOpen = false;
 float surfacePSI = 10.44;
 
 int pneumaticShutoffPin = 0;//Pin to shut off
 unsigned long pneumaticShutoffTime = 0;//Time at which we should turn off pneumatic valve
 
-const int numMotors = 6;
+const int numMotors = 8;
 
 ros::NodeHandle nh;
 msurobosub::Depth depthMsg;
@@ -48,19 +55,22 @@ Arduino_I2C_ESC motors[numMotors] = {
 
 //Motor pins
 int motorPins[numMotors] = {
-  46,//ForwardPort
-  42,//ForwardStarboard
-  44,//DepthFore
-  36,//DepthAft
-  40,//StrafeForward
-  38//StrafeBack
+	2, //Port Forward
+	3, //Starboard Forward
+	4, //Fore Strafe
+	5, //Aft Strafe
+	6, //Fore Port Depth
+	7, //Fore Starboard Depth
+	8, //Aft Port Depth
+	9  //Aft Starboard Depth
 };
 
 Servo motors[numMotors];
 
 //Array for direction motor runs
-float direction[numMotors] = {.96, 1, -.88, -1, -1, -1};
-int lastMotorCommand[numMotors] = {1500, 1500, 1500, 1500, 1500, 1500};
+//float direction[numMotors] = {.96, 1, -.88, -1, -1, -1};
+float direction[numMotors] = {1, 1, 1, 1, 1, 1, 1, 1}; //Find the direction here
+int lastMotorCommand[numMotors] = {1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500};
 int lastMotor = 0;//Which motor did we send an update for last?
 unsigned long motorUpdateTime = 0;//Time at which we should send next motor update
 
@@ -69,12 +79,14 @@ unsigned long motorUpdateTime = 0;//Time at which we should send next motor upda
 float maxThrust = .75;
 
 void motorCommandCallback(const msurobosub::MotorCommand& command){
-  lastMotorCommand[0] = percentToThrottle(command.power[0], 0);
-  lastMotorCommand[1] = percentToThrottle(command.power[1], 1);
-  lastMotorCommand[2] = percentToThrottle(command.power[2], 2);
-  lastMotorCommand[3] = percentToThrottle(command.power[3], 3);
-  lastMotorCommand[4] = percentToThrottle(command.power[4], 4);
-  lastMotorCommand[5] = percentToThrottle(command.power[5], 5);
+	lastMotorCommand[0] = percentToThrottle(command.power[0], 0);
+	lastMotorCommand[1] = percentToThrottle(command.power[1], 1);
+	lastMotorCommand[2] = percentToThrottle(command.power[2], 2);
+	lastMotorCommand[3] = percentToThrottle(command.power[3], 3);
+	lastMotorCommand[4] = percentToThrottle(command.power[4], 4);
+	lastMotorCommand[5] = percentToThrottle(command.power[5], 5);
+	lastMotorCommand[6] = percentToThrottle(command.power[6], 6);
+	lastMotorCommand[7] = percentToThrottle(command.power[7], 7);
 }
 
 void pneumaticCommandCallback(const msurobosub::PneumaticCommand& command){
@@ -89,40 +101,56 @@ void pneumaticCommandCallback(const msurobosub::PneumaticCommand& command){
         nh.loginfo("Pneumatics locked");
       }
       break;
-    case 1://Torp 1
+    case 41://Left Torpedo -> 1
       if(!pneumaticLock){
-        nh.loginfo("Firing torpedo 1");
-        activatePneumatics(torp1Pin, 250);
+        nh.loginfo("Firing left torpedo");
+        activatePneumatics(torpLeftPin, 250); //250?? Duration in Milliseconds?
       }
       break;
-    case 2://Torp 2
+    case 43://Right Torpedo -> 2
       if(!pneumaticLock){
-        nh.loginfo("Firing torpedo 2");
-        activatePneumatics(torp2Pin, 250);
+        nh.loginfo("Firing right torpedo");
+        activatePneumatics(torpRightPin, 250);
       }
       break;
-    case 3://Drop 1
+    case 37://Left Dropper -> 3
       if(!pneumaticLock){
-        nh.loginfo("Releasing dropper 1");
-        activatePneumatics(drop1Pin, 250);
+        nh.loginfo("Releasing left dropper");
+        activatePneumatics(dropLeftPin, 250);
       }
       break;
-    case 4://Drop 2
+    case 39://Right Dropper -> 4
       if(!pneumaticLock){
-        nh.loginfo("Releasing dropper 1");
-        activatePneumatics(drop2Pin, 250);
+        nh.loginfo("Releasing right dropper");
+        activatePneumatics(dropRightPin, 250);
       }
       break;
-    case 5://Arm open
+    case 33://Arm Up/Down -> 5
       if(!pneumaticLock){
-        nh.loginfo("Opening arm");
-        activatePneumatics(armOpenPin, 3000);
+		if(!armDown) {
+        	nh.loginfo("Lowering Arm");
+			armDown = true;
+        	activatePneumatics(armUpDownPin, 3000);//3000? 3000 Milliseconds?
+		}
+		else {
+			nh.loginfo("Raising Arm");
+			armDown = false;
+			activatePneumatics(armUpDownPin, 3000);
+		}
       }
       break;
-    case 6://Arm close
+    case 35://Hand Open/Close -> 6
       if(!pneumaticLock){
-        nh.loginfo("Closing arm");
-        activatePneumatics(armClosePin, 3000);
+        if(!handOpen) {
+			nh.loginfo("Opening Hand");
+			handOpen = true;
+        	activatePneumatics(handOpenClosePin, 3000);
+		}
+		else {
+			nh.loginfo("Closing Hand");
+			handOpen = false;
+			activatePneumatics(handOpenClosePin, 3000);
+		}
       }
       break;
     default:
@@ -134,7 +162,15 @@ ros::Subscriber<msurobosub::MotorCommand> subMotorCommand("command/motor", &moto
 ros::Subscriber<msurobosub::PneumaticCommand> subPneumaticCommand("command/pneumatic", &pneumaticCommandCallback);
 
 void activatePneumatics(int pin, int duration){
-  digitalWrite(pin, LOW);
+  if(pin == 33 && armDown) {
+	digitalWrite(pin, LOW);
+  }
+  else if(pin == 35 && handOpen) {
+	digitalWrite(pin, LOW)
+  }
+  else {
+    digitalWrite(pin, HIGH);
+  }
   pneumaticShutoffTime = millis() + duration;
   pneumaticShutoffPin = pin;
 }
@@ -179,7 +215,7 @@ void motorUpdate(){
       motorStatusMsg.temperature = motors[i].temperature();
       pubMotorStatus.publish(&motorStatusMsg); 
 
-      lastMotor = lastMotor == 5 ? 0 : ++lastMotor;
+      lastMotor = lastMotor == 7 ? 0 : ++lastMotor; //lastMotor == 5 ? 0 ->WTF?
       motorUpdateTime = millis() + (1/motorStatusFreq*1000)/numMotors;
     }
 	*/
@@ -215,19 +251,19 @@ void setup() {
   nh.advertise(pubDepth);
   nh.subscribe(subPneumaticCommand);
 
-  //Initialize pneumatics
-  pinMode(torp1Pin, OUTPUT);
-  pinMode(torp2Pin, OUTPUT);
-  pinMode(drop1Pin, OUTPUT);
-  pinMode(drop2Pin, OUTPUT);
-  pinMode(armOpenPin, OUTPUT);
-  pinMode(armClosePin, OUTPUT);
-  digitalWrite(armOpenPin, HIGH);
-  digitalWrite(armClosePin, HIGH);
-  digitalWrite(torp1Pin, HIGH);
-  digitalWrite(torp2Pin, HIGH);
-  digitalWrite(drop1Pin, HIGH);
-  digitalWrite(drop2Pin, HIGH);
+  //Initialize pneumatics -> LOW not HIGH
+  pinMode(torpLeftPin, OUTPUT);
+  pinMode(torpRightPin, OUTPUT);
+  pinMode(dropLeftPin, OUTPUT);
+  pinMode(dropRightPin, OUTPUT);
+  pinMode(armUpDownPin, OUTPUT);
+  pinMode(handOpenClosePin, OUTPUT);
+  digitalWrite(armUpDownPin, LOW);
+  digitalWrite(handOpenClosePin, LOW);
+  digitalWrite(torpLeftPin, LOW);
+  digitalWrite(torpRightPin, LOW);
+  digitalWrite(dropLeftPin, LOW);
+  digitalWrite(dropRightPin, LOW);
 
   //Initialize messages
   depthMsg.header = getHeader();
