@@ -24,13 +24,13 @@ motorStopped = False
 #Map motor activations to key presses
 #Key id maps to list of motor ids to activate (keys), and the direction with which to activate (values)
 keyMapping = {119: {0: 1, 1: 1},#w, forward
-			  97:  {6: -1, 7: -1},#a, strafe left
+			  97:  {2: -1, 3: -1},#a, strafe left
 			  115: {0: -1, 1: -1},#s, reverse
-			  100: {4: 1, 5: 1},#d, strafe right
-			  113: {0: -1, 1: 1},#q, rotate left
-			  101: {0: 1, 1: -1},#e, rotate right
-			  99:  {2: -1, 3: -1, 4: -1, 5: -1},#c, descend -> NOT sure about the -1 setting. Figure this out from live testing
-			  32:  {2: 1, 3: 1, 4: 1, 5: 1},#space, ascend
+			  100: {2: 1, 3: 1},#d, strafe right
+			  113: {2: -1, 3: 1},#q, rotate left
+			  101: {2: 1, 3: -1},#e, rotate right
+			  99:  {4: -1, 5: -1, 6: -1, 7: -1},#c, descend -> NOT sure about the -1 setting. Figure this out from live testing
+			  32:  {4: 1, 5: 1, 6: 1, 7: 1},#space, ascend
 			  120: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0},#x, stop all motors 
 			  116: {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1}#t, test all motors
 			 }
@@ -59,10 +59,14 @@ def userInput(key, down):
 		msgPneu.command = 3
 	elif(key == 52 and down):#4, dropper
 		msgPneu.command = 4
-	elif(key == 53 and down):#5, arm open
+	elif(key == 53 and down):#5, arm lower
 		msgPneu.command = 5
-	elif(key == 54 and down):#6, arm close
+	elif(key == 54 and down):#6, arm raise
 		msgPneu.command = 6
+	elif(key == 55 and down):#7 hand open
+		msgPneu.command = 7
+	elif(key == 56 and down):#8 hand close
+		msgPneu.command = 8
 	#other
 	elif(key == 112 and down):#p, toggle mission pause
 		msgMission.data = not msgMission.data

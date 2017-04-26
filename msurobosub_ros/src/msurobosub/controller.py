@@ -168,7 +168,7 @@ def spin(left = True):
 
 def controller():
 	global pubMot, msgMot
-	pubMot = rospy.Publisher('command/motor', MotorCommand, queue_size=10)
+	pubMot = rospy.Publisher('command/motor', MotorCommand, queue_size=16)
 	rospy.init_node('controller')
 
 	rospy.Subscriber("odometry/filtered", Odometry, odomCallback)

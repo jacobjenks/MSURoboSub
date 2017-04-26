@@ -16,7 +16,7 @@
 #include <std_msgs/Header.h>
 /***** Pneumatics *****/
 const int armUpDownPin = 33;
-const int handOpenClosePine = 35;
+const int handOpenClosePin = 35;
 const int dropLeftPin = 37;
 const int dropRightPin = 39;
 const int torpLeftPin = 41;
@@ -166,7 +166,7 @@ void activatePneumatics(int pin, int duration){
 	digitalWrite(pin, LOW);
   }
   else if(pin == 35 && handOpen) {
-	digitalWrite(pin, LOW)
+	  digitalWrite(pin, LOW);
   }
   else {
     digitalWrite(pin, HIGH);
