@@ -14,8 +14,8 @@
 	<!-- Nodes -->
 
 	<!-- Mission -->
-	<node respawn="true" pkg="msurobosub" type="task.py" name="mission"/>
-	<node respawn="true" pkg="msurobosub" type="controller.py" name="controller"/>
+	<!--<node respawn="true" pkg="msurobosub" type="task.py" name="mission"/>-->
+	<!--<node respawn="true" pkg="msurobosub" type="controller.py" name="controller"/>-->
 	<node respawn="true" pkg="frcnn_object_detector" type="object_detector.py" name="object_detector"/>
 	
 	<!-- END Mission -->	
@@ -32,8 +32,8 @@
 	<!-- END Arduino relays -->
 
 	<!-- Sensor data -->
-	<node respawn="true" pkg="msurobosub" type="imu.py" name="imu"></node>
-	<node respawn="true" pkg="msurobosub" type="depthOdom.py" name="depthOdom"></node>
+	<!--<node respawn="true" pkg="msurobosub" type="imu.py" name="imu"></node>-->
+	<!--<node respawn="true" pkg="msurobosub" type="depthOdom.py" name="depthOdom"></node>-->
 
 	<!-- Camera data -->
 	<node pkg="cv_camera" type="cv_camera_node" ns="sensors" name="camF">
@@ -120,8 +120,8 @@ false, false, false]</rosparam>
 		<param name="allow_repeat" value="false"/>	
 	</node> 
 
-	<!--<node respawn="true" pkg="msurobosub" type="userInput.py" name="user_input">
-	</node>-->
+	<node respawn="true" pkg="msurobosub" type="userInput.py" name="user_input">
+	</node>
 
 	<!-- END Keyboard input -->
 
@@ -182,9 +182,9 @@ false, false, false]</rosparam>
 	<!--<node name="rqt" pkg="rqt" type="rqt"/>-->
 	
 	<!-- Camera Recording  -->
-	<node pkg="rosbag" type="record" name="rosbag_record_cam"
+	<!--<node pkg="rosbag" type="record" name="rosbag_record_cam"
 		args="record -o /home/robosub/MSURoboSub/logs/robosub /sensors/camF/image_raw /sensors/stereo_bot/left/image_raw"
-	/>
+	/>-->
 
 	<!-- END Camera Recording  -->
 

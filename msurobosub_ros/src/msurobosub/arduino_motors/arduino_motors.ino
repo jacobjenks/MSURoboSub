@@ -42,17 +42,6 @@ ros::NodeHandle nh;
 msurobosub::Depth depthMsg;
 ros::Publisher pubDepth("sensors/depth", &depthMsg);
 
-/*
-Arduino_I2C_ESC motors[numMotors] = {
-  Arduino_I2C_ESC(0x30),//ForwardPort
-  Arduino_I2C_ESC(0x2F),//ForwardStar
-  Arduino_I2C_ESC(0x35),//DepthFore
-  Arduino_I2C_ESC(0x37),//DepthAft
-  Arduino_I2C_ESC(0x38),//StrafeForward
-  Arduino_I2C_ESC(0x36)//StrafeBack
-};
-*/
-
 //Motor pins
 int motorPins[numMotors] = {
 	2, //Port Forward
@@ -61,7 +50,7 @@ int motorPins[numMotors] = {
 	5, //Aft Strafe
 	6, //Fore Port Depth
 	7, //Fore Starboard Depth
-	8, //Aft Port Depth
+	10, //Aft Port Depth
 	9  //Aft Starboard Depth
 };
 
@@ -69,7 +58,7 @@ Servo motors[numMotors];
 
 //Array for direction motor runs
 //float direction[numMotors] = {.96, 1, -.88, -1, -1, -1};
-float direction[numMotors] = {1, 1, 1, 1, 1, 1, 1, 1}; //Find the direction here
+float direction[numMotors] = {-1, -1, 1, -1, -1, 1, 1, 1}; //Find the direction here
 int lastMotorCommand[numMotors] = {1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500};
 int lastMotor = 0;//Which motor did we send an update for last?
 unsigned long motorUpdateTime = 0;//Time at which we should send next motor update
@@ -85,8 +74,8 @@ void motorCommandCallback(const msurobosub::MotorCommand& command){
 	lastMotorCommand[3] = percentToThrottle(command.power[3], 3);
 	lastMotorCommand[4] = percentToThrottle(command.power[4], 4);
 	lastMotorCommand[5] = percentToThrottle(command.power[5], 5);
-	lastMotorCommand[6] = percentToThrottle(command.power[6], 6);
-	lastMotorCommand[7] = percentToThrottle(command.power[7], 7);
+	//lastMotorCommand[6] = percentToThrottle(command.power[6], 6);
+	//lastMotorCommand[7] = percentToThrottle(command.power[7], 7);
 }
 
 void pneumaticCommandCallback(const msurobosub::PneumaticCommand& command){
@@ -194,40 +183,14 @@ std_msgs::Header getHeader(std_msgs::Header h){
 //Update motor readings/power setting
 void motorUpdate(){
   for(int i = 0; i < numMotors; i++){
-
-	//PWM stuff
 	motors[i].writeMicroseconds(lastMotorCommand[i]);
-	
-
-	//I2C stuff
-	/*
-    motors[i].update();
-    motors[i].set(lastMotorCommand[i]);
-	
-	
-    if(lastMotor == i && millis() > motorUpdateTime){
-      motorStatusMsg.header = getHeader(motorStatusMsg.header);
-      motorStatusMsg.motor_id = i;
-      motorStatusMsg.connected = motors[i].isAlive() ? 1 : 0;
-      motorStatusMsg.rpm = motors[i].rpm();
-      motorStatusMsg.voltage = motors[i].voltage();
-      motorStatusMsg.current = motors[i].current();
-      motorStatusMsg.temperature = motors[i].temperature();
-      pubMotorStatus.publish(&motorStatusMsg); 
-
-      lastMotor = lastMotor == 7 ? 0 : ++lastMotor; //lastMotor == 5 ? 0 ->WTF?
-      motorUpdateTime = millis() + (1/motorStatusFreq*1000)/numMotors;
-    }
-	*/
   }
 }
 
 //This function converts a value between -1 and 1 to a throttle value
-//I2C throttle values are -32767 to 32767
 //PWM throttle values are 1100 to 1900, 1500 being 0
 int percentToThrottle(float t, int motor){
   t = constrain(t, -1, 1);
-  //return (int16_t)(t * 32767) * maxThrust;//I2C
   return int(1500 + t*400*maxThrust*direction[motor]);//PWM
 }
 
