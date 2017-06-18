@@ -12,12 +12,12 @@ Double check linear algebra calculations
 Are linear transformations the right tool to use here
 Does this even matter if I am just going to be using the visual controller?
 '''
-msgOdom = None
-msgOdomCommand = None
-msgMot = None
-msgOdomFront = None
+msgOdom = None # This is where the sub is
+msgOdomCommand = None # This is where we want to go
+msgOdomFront = None # This is the front of the sub
+msgMot = None # This is the MotorCommand msg 
 
-pubMot = None
+pubMot = None # This is the publisher for msgMot
 
 max_power = 1.00
 max_rotation = 0.10

@@ -310,7 +310,7 @@ class TestControllerMission(Task):
 		Task.__init__(self, 0, "Test Controller Mission", subTasks)
 
 
-class StupidMission(Task):
+class QualifyMission(Task):
 	
 	def __init__(self):
 		subTasks = []
@@ -319,7 +319,7 @@ class StupidMission(Task):
 		subTasks.append(MotorCommandTask(1, "Go", [], [1, 1, 0, 0, -0.34, -0.34, -0.34, -0.34], 400))
 
 		subTasks.append(MotorCommandTask(2, "Stop", [], [0, 0, 0, 0, 0, 0, 0, 0], 0))
-		Task.__init__(self, 0, "Stupid Mission", subTasks)
+		Task.__init__(self, 0, "Qualify Mission", subTasks)
 
 
 
@@ -335,6 +335,6 @@ class CompetitionMission(Task):
 if __name__ == '__main__':
 	try:
 		#test = TestControllerMission()	
-		StupidMission()
+		QualifyMission()
 	except rospy.ROSInterruptException:
 		pass
