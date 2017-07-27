@@ -1,6 +1,7 @@
 #!/usr/bin/env python
+
 import rospy
-from msurobosub.msg import MotorCommand
+from msurobosub.msg import MotorCommand, VisualCoordinates
 import math
 from sensor_msgs.msg import Image, CameraInfo
 from nav_msgs.msg import Odometry
@@ -34,13 +35,13 @@ def send_motor_command():
 	motors.power[0] = max_power if coordinates.z > 2 else (max_power/4)
 	motors.power[1] = max_power if coordinates.z > 2 else (max_power/4)
 	
-	motors.power[2] = coordinates.x if coordinates.x <= max_power else max_power
-	motors.power[3] = coordinates.x if coordinates.x <= max_power else max_power 
+	motors.power[2] = coordinates.x if abs(coordinates.x) <= max_power else max_power
+	motors.power[3] = coordinates.x if abs(coordinates.x) <= max_power else max_power 
 	
-	motors.power[4] = coordinates.y if coordinates.y <= max_power else max_power
-	motors.power[5] = coordinates.y if coordinates.y <= max_power else max_power
-	motors.power[6] = coordinates.y if coordinates.y <= max_power else max_power
-	motors.power[7] = coordinates.y if coordinates.y <= max_power else max_power
+	motors.power[4] = coordinates.y if abs(coordinates.y) <= max_power else max_power
+	motors.power[5] = coordinates.y if abs(coordinates.y) <= max_power else max_power
+	motors.power[6] = coordinates.y if abs(coordinates.y) <= max_power else max_power
+	motors.power[7] = coordinates.y if abs(coordinates.y) <= max_power else max_power
 		
 	motor_publisher.publish(motors)
 
@@ -67,15 +68,15 @@ def visual_controller():
 
 	rate = rospy.Rate(50)
 	while not rospy.is_shutdown():
-		send_motor_command():
+		send_motor_command()
 		rate.sleep()
 
 def test_visual_controller():
-	# Do some stuff
+	pass
 
- __name__ == "__main__":
+if __name__ == "__main__":
 	try:
 		visual_controller()
 		# test_visual_controller() # Give some fake coordinates to an object
-	except rospy.ROSInterruptException
+	except rospy.ROSInterruptException:
 		pass

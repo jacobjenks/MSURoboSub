@@ -15,8 +15,10 @@
 
 	<!-- Mission -->
 	<node respawn="true" pkg="msurobosub" type="task.py" name="mission"/>
-	<node respawn="true" pkg="msurobosub" type="controller.py" name="controller"/>
-	<node respawn="true" pkg="frcnn_object_detector" type="object_detector.py" name="object_detector"/>
+	<!-- <node respawn="true" pkg="msurobosub" type="mission.py" name="mission"/> -->
+	<!--<node respawn="true" pkg="msurobosub" type="controller.py" name="controller"/>-->
+	<!-- <node respawn="true" pkg="msurobosub" type="visualController.py" name="visual_controller"/> -->
+	<!-- <node respawn="true" pkg="frcnn_object_detector" type="object_detector.py" name="object_detector"/> -->
 	
 	<!-- END Mission -->	
 
@@ -36,12 +38,19 @@
 	<!--<node respawn="true" pkg="msurobosub" type="depthOdom.py" name="depthOdom"></node>-->
 
 	<!-- Camera data -->
-	<node pkg="cv_camera" type="cv_camera_node" ns="sensors" name="camF">
+	<!-- <node pkg="cv_camera" type="cv_camera_node" ns="sensors" name="camF">
 		<param name="device_id" value="0"/>
 		<param name="frame_id" value="sensor_msgs/camF"/>
 		<param name="image_width" value="640"/>
 		<param name="image_height" value="480"/>
-	</node>	
+	</node> -->
+
+	<!-- <node pkg="cv_camera" type="cv_camera_node" ns="sensors" name="bottom">
+		<param name="device_id" value="1"/>
+		<param name="frame_id" value="sensors_msgs/camDR"/>
+		<param name="image_width" value="640"/>
+		<param name="image_height" value="480"/>
+	</node> -->	
  
 	<!--<node pkg="cv_camera" type="cv_camera_node" ns="sensors/stereo_bot/" name="left">
 		<param name="device_id" value="1"/>
@@ -116,12 +125,12 @@ false, false, false]</rosparam>
 	</node>
 
 	<!-- Keyboard input -->
-	<node respawn="true" pkg="keyboard" type="keyboard" name="keyboard">
+	<!-- <node respawn="true" pkg="keyboard" type="keyboard" name="keyboard">
 		<param name="allow_repeat" value="false"/>	
-	</node> 
+	</node> -->
 
-	<node respawn="true" pkg="msurobosub" type="userInput.py" name="user_input">
-	</node>
+	<!-- <node respawn="true" pkg="msurobosub" type="userInput.py" name="user_input">
+	</node> -->
 
 	<!-- END Keyboard input -->
 

@@ -32,7 +32,15 @@ keyMapping = {119: {0: 1, 1: 1},#w, forward
 			  99:  {4: -1, 5: -1, 6: -1, 7: -1},#c, descend -> NOT sure about the -1 setting. Figure this out from live testing
 			  32:  {4: 1, 5: 1, 6: 1, 7: 1},#space, ascend
 			  120: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0},#x, stop all motors 
-			  116: {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1}#t, test all motors
+			  116: {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1},#t, test all motors
+			  49: {0: 0.5}, #1
+			  50: {1: 0.5}, #2
+			  51: {2: 0.5}, #3
+			  52: {3: 0.5}, #4
+			  53: {4: 0.5}, #5
+			  54: {5: 0.5}, #6
+			  55: {6: 0.5}, #7
+			  56: {7: 0.5} #8 
 			 }
 
 #@param Key key: The message for the key that was pressed
@@ -51,21 +59,21 @@ def userInput(key, down):
 	#pneumatics
 	if(key == 108 and down):#l, toggle pneumatic lock
 		msgPneu.command = 0
-	elif(key == 49 and down):#1, fire torpedo
+	elif(key == 102 and down):#1, fire torpedo
 		msgPneu.command = 1
-	elif(key == 50 and down):#2, fire torpedo
+	elif(key == 103 and down):#2, fire torpedo
 		msgPneu.command = 2
-	elif(key == 51 and down):#3, dropper
+	elif(key == 104 and down):#3, dropper
 		msgPneu.command = 3
-	elif(key == 52 and down):#4, dropper
+	elif(key == 106 and down):#4, dropper
 		msgPneu.command = 4
-	elif(key == 53 and down):#5, arm lower
+	elif(key == 107 and down):#5, arm lower
 		msgPneu.command = 5
-	elif(key == 54 and down):#6, arm raise
+	elif(key == 98 and down):#6, arm raise
 		msgPneu.command = 6
-	elif(key == 55 and down):#7 hand open
+	elif(key == 111 and down):#7 hand open
 		msgPneu.command = 7
-	elif(key == 56 and down):#8 hand close
+	elif(key == 110 and down):#8 hand close
 		msgPneu.command = 8
 	#other
 	elif(key == 112 and down):#p, toggle mission pause

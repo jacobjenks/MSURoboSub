@@ -6,6 +6,7 @@ from geometry_msgs.msg import Pose, PoseWithCovariance, Point
 from sensor_msgs.msg import Imu
 from nav_msgs.msg import Odometry
 from std_msgs.msg import String, Bool
+# from msurobosub.msg import VisualCoordinates
 
 #Enum
 class TaskStatus:
@@ -19,6 +20,8 @@ class Task:
 	targetObject = None  
 	state = TaskStatus.waiting # Tasks sit in waiting state until monitorStatus() decides they are available to run
 	pubControl = None # Tasks publish a desired Pose as a target for the controller
+	pubVisiControl = None # Tasks publish desired object coordinates in the camera frame - normalized (-1 <= x,y <= 1)
+	visiCoordindates = None # Callback data for object_detector publisher
 	pubStatus = None # Channel for publishing task state/debug info
 	name = "Task"
 	runAlways = False # Some tasks should always run, regardless of status
@@ -38,6 +41,7 @@ class Task:
 		rospy.init_node('Task', anonymous=True)
 		self.pubControl = rospy.Publisher('controller/moveTo', Odometry, queue_size=5)
 		self.pubStatus = rospy.Publisher('mission/status', String, queue_size=5)
+		# self.pubVisiControl = rospy.Publisher('visual/moveTo', VisualCoordinates, queue_size=5)		
 
 		if self.priority == 0:
 			rate = rospy.Rate(10)
@@ -147,6 +151,7 @@ class MoveToTask(Task):
 		Task.__init__(self, priority, name, subTasks)
 		self.imuSub = rospy.Subscriber("sensors/imu", Imu, self.monitorStatus)
 		self.odomSub = rospy.Subscriber("odometry/filtered", Odometry, self.monitorStatus)
+		# self.visiCoordinates = rospy.Subscriber('visual/coordinates', VisualCoordinates, self.monitorStatus)
 
 		self.target = target
 		self.bumpThresh = bumpThresh
@@ -162,8 +167,8 @@ class MoveToTask(Task):
 	#Get 3d vector magnitude
 	def getMagnitude(self, msg):
 		return math.sqrt(math.pow(msg.x, 2) 
-								* math.pow(msg.y, 2)
-								* math.pow(msg.z, 2))
+								+ math.pow(msg.y, 2)
+								+ math.pow(msg.z, 2))
 
 	def monitorStatus(self, msg):
 		if type(msg).__name__ == "Imu":
@@ -191,7 +196,9 @@ class MoveToTask(Task):
 			if self.targetDistance < self.proximityThresh:
 				self.distanceStatus = True
 				self.pubStatus.publish(self.name + ": arrived at target")
-		"""
+		# elif type(msg).__name__ == "VisualCoordinates":
+			# Do Something
+		
 		elif type(msg).__name__ == "Object":
 			if msg.header.frame_id == targetFrame:
 				if self.targetFound == False:
@@ -199,7 +206,7 @@ class MoveToTask(Task):
 					self.status = TaskStatus.ready
 					self.pubStatus.publish(self.name + ": target found")
 				targetOdom = msg
-		"""
+		
 
 		if self.distanceStatus and self.steadyStatus and self.bumpStatus:
 			self.status = TaskStatus.complete
